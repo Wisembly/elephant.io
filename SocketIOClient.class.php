@@ -7,6 +7,16 @@
  * @author Ludovic Barreca <ludovic@balloonup.com>
  */
 class SocketIOClient {
+    const TYPE_DISCONNECT   = 0;
+    const TYPE_CONNECT      = 1;
+    const TYPE_HEARTBEAT    = 2;
+    const TYPE_MESSAGE      = 3;
+    const TYPE_JSON_MESSAGE = 4;
+    const TYPE_EVENT        = 5;
+    const TYPE_ACK          = 6;
+    const TYPE_ERROR        = 7;
+    const TYPE_NOOP         = 8;
+
     private $socketIOUrl;
     private $serverHost;
     private $serverPort = 80;
@@ -25,6 +35,7 @@ class SocketIOClient {
     public function init() {
         $this->handshake();
         $this->connect();
+        $this->keepAlive();
     }
 
     /**
@@ -87,6 +98,57 @@ class SocketIOClient {
             $res = trim(fgets($this->fd));
             if ($res === '') break;
         }
+
+        if ($this->read() != '1::') {
+            throw new \Exception('Socket.io did not send connect response. Aborting...');
+        }
+
+        $this->send(self::TYPE_CONNECT);
+        $this->heartbeatStamp = time();
+    }
+
+    /**
+     * Keep the connection alive and dispatch events
+     *
+     * @access public
+     */
+    public function keepAlive() {
+        while(true) {
+            if ($this->session['heartbeat_timeout'] > 0 && $this->session['heartbeat_timeout']+$this->heartbeatStamp-5 < time()) {
+                $this->send(self::TYPE_HEARTBEAT);
+                $this->heartbeatStamp = time();
+            }
+
+            $this->read();
+        }
+    }
+
+    /**
+     * Read the buffer and return the oldest event in stack
+     *
+     * @access public
+     * @return string
+     */
+    public function read() {
+        // to be implemented
+        return '1::';
+    }
+
+    /**
+     * Send message to the websocket
+     *
+     * @access public
+     * @param int $type
+     * @param int $id
+     * @param int $endpoint
+     * @param string $message
+     */
+    public function send($type, $id = null, $endpoint = null, $message = null) {
+        if (!is_int($type) || $type > 8) {
+            throw new \InvalidArgumentException('SocketIOClient::send() type parameter must be an integer strictly inferior to 9.');
+        }
+
+        fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
     }
 
     /**
