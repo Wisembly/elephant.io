@@ -186,6 +186,15 @@ class SocketIOClient {
         $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
     }
 
+
+    /**
+     * Send ANSI formatted message to stdout.
+     * First parameter must be either debug, info, error or ok
+     *
+     * @access public
+     * @param string $type
+     * @param string $message
+     */
     public function stdout($type, $message) {
         $typeMap = array(
             'debug'   => array(36, '- debug -'),
