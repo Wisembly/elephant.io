@@ -23,8 +23,8 @@ class SocketIOClient {
     private $session;
     private $fd;
 
-    public function __construct($socketIOUrl) {
-        $this->socketIOUrl = $socketIOUrl;
+    public function __construct($socketIOUrl, $protocol = 1) {
+        $this->socketIOUrl = $socketIOUrl.'/socket.io/'.(string)$protocol;
         $this->parseUrl();
     }
 
@@ -101,9 +101,12 @@ class SocketIOClient {
 
         if ($this->read() != '1::') {
             throw new \Exception('Socket.io did not send connect response. Aborting...');
+        } else {
+            $this->stdout('info', 'Server report us as connected !');
         }
 
         $this->send(self::TYPE_CONNECT);
+        $this->stdout('debug', 'Sent connect confirmation');
         $this->heartbeatStamp = time();
     }
 
@@ -116,8 +119,10 @@ class SocketIOClient {
         while(true) {
             if ($this->session['heartbeat_timeout'] > 0 && $this->session['heartbeat_timeout']+$this->heartbeatStamp-5 < time()) {
                 $this->send(self::TYPE_HEARTBEAT);
+                $this->stdout('debug', 'Sent heartbeat packet');
                 $this->heartbeatStamp = time();
             }
+
 
             $this->read();
         }
@@ -130,7 +135,6 @@ class SocketIOClient {
      * @return string
      */
     public function read() {
-        // to be implemented
         return '1::';
     }
 
@@ -149,6 +153,21 @@ class SocketIOClient {
         }
 
         fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
+    }
+
+    public function stdout($type, $message) {
+        $typeMap = array(
+            'debug'   => array(36, '- debug -'),
+            'info'    => array(37, '- info  -'),
+            'error'   => array(31, '- error -'),
+            'ok'      => array(32, '- ok    -'),
+        );
+
+        if (!array_key_exists($type, $typeMap)) {
+            throw new \InvalidArgumentException('SocketIOClient.class.php::stdout $type parameter must be debug, info, error or success. Got '.$type);
+        }
+
+        fwrite(STDOUT, "\033[".$typeMap[$type][0]."m".$typeMap[$type][1]."\033[37m  ".$message."\r\n");
     }
 
     /**
