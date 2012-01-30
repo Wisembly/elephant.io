@@ -22,6 +22,7 @@ class SocketIOClient {
     private $serverPort = 80;
     private $session;
     private $fd;
+    private $buffer;
 
     public function __construct($socketIOUrl, $protocol = 1) {
         $this->socketIOUrl = $socketIOUrl.'/socket.io/'.(string)$protocol;
@@ -106,7 +107,6 @@ class SocketIOClient {
         }
 
         $this->send(self::TYPE_CONNECT);
-        $this->stdout('debug', 'Sent connect confirmation');
         $this->heartbeatStamp = time();
     }
 
@@ -119,10 +119,13 @@ class SocketIOClient {
         while(true) {
             if ($this->session['heartbeat_timeout'] > 0 && $this->session['heartbeat_timeout']+$this->heartbeatStamp-5 < time()) {
                 $this->send(self::TYPE_HEARTBEAT);
-                $this->stdout('debug', 'Sent heartbeat packet');
                 $this->heartbeatStamp = time();
             }
 
+            $r = array($this->fd);
+            $w = $e = null;
+
+            if (stream_select($r, $w, $e, 5) == 0) continue;
 
             $this->read();
         }
@@ -135,7 +138,34 @@ class SocketIOClient {
      * @return string
      */
     public function read() {
-        return '1::';
+        while(true) {
+            if (strlen($this->buffer) > 1) {
+                if ($this->buffer[0] != "\x00") {
+                    $this->buffer = (string)substr($this->buffer, 1);
+                    continue;
+                }
+
+                $pos = strpos($this->buffer, "\xff");
+            } else {
+                $pos = false;
+            }
+
+            if ($pos === false) {
+                $tmp = fread($this->fd, 4096);
+
+                if ($tmp === false) {
+                    throw new \Exception('Something went wrong. Socket seems to be closed !');
+                }
+
+                $this->buffer .= $tmp;
+                continue;
+            }
+            $res = substr($this->buffer, 1, $pos-1);
+            $this->buffer = (string)substr($this->buffer, $pos+1);
+            $this->stdout('debug', 'Received '.$res);
+
+            return $res;
+        }
     }
 
     /**
@@ -153,6 +183,7 @@ class SocketIOClient {
         }
 
         fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
+        $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
     }
 
     public function stdout($type, $message) {
