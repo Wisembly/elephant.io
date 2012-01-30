@@ -1,12 +1,12 @@
 <?php
 
 /**
- * SocketIOClient is a rough implementation of socket.io protocol.
+ * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
  *
  * @author Ludovic Barreca <ludovic@balloonup.com>
  */
-class SocketIOClient {
+class ElephantIOClient {
     const TYPE_DISCONNECT   = 0;
     const TYPE_CONNECT      = 1;
     const TYPE_HEARTBEAT    = 2;
@@ -88,7 +88,7 @@ class SocketIOClient {
         $res = fgets($this->fd);
 
         if ($res === false) {
-            throw new \Exception('socket.io did not respond properly. Aborting...');
+            throw new \Exception('Socket.io did not respond properly. Aborting...');
         }
 
         if ($subres = substr($res, 0, 12) != 'HTTP/1.1 101') {
@@ -179,7 +179,7 @@ class SocketIOClient {
      */
     public function send($type, $id = null, $endpoint = null, $message = null) {
         if (!is_int($type) || $type > 8) {
-            throw new \InvalidArgumentException('SocketIOClient::send() type parameter must be an integer strictly inferior to 9.');
+            throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
         }
 
         fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
@@ -204,7 +204,7 @@ class SocketIOClient {
         );
 
         if (!array_key_exists($type, $typeMap)) {
-            throw new \InvalidArgumentException('SocketIOClient.class.php::stdout $type parameter must be debug, info, error or success. Got '.$type);
+            throw new \InvalidArgumentException('ElephantIOClient::stdout $type parameter must be debug, info, error or success. Got '.$type);
         }
 
         fwrite(STDOUT, "\033[".$typeMap[$type][0]."m".$typeMap[$type][1]."\033[37m  ".$message."\r\n");

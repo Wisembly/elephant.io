@@ -2,8 +2,8 @@
 
 <?php
 
-require('../SocketIOClient.class.php');
+require('../ElephantIOClient.class.php');
 
-$elephant = new SocketIOClient('http://localhost:1337');
+$elephant = new ElephantIOClient('http://localhost:1337');
 
 $elephant->init();
