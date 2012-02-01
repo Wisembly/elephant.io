@@ -216,6 +216,9 @@ class Client {
      * @param string $message
      */
     public function stdout($type, $message) {
+        if (!defined('STDOUT')) {
+            return false;
+        }
         $typeMap = array(
             'debug'   => array(36, '- debug -'),
             'info'    => array(37, '- info  -'),
