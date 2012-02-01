@@ -33,12 +33,16 @@ class ElephantIOClient {
     /**
      * Initialize a new connection
      *
+     * @param boolean $keepalive
+     * @return ElephantIOClient
      */
     public function init($keepalive = false) {
         $this->handshake();
         $this->connect();
         if ($keepalive) {
             $this->keepAlive();
+        } else {
+            return $this;
         }
     }
 
