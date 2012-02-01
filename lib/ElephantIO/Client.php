@@ -27,8 +27,8 @@ class Client {
     private $buffer;
     private $lastId = 0;
 
-    public function __construct($socketIOUrl, $protocol = 1) {
-        $this->socketIOUrl = $socketIOUrl.'/socket.io/'.(string)$protocol;
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1) {
+        $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->parseUrl();
     }
 
@@ -46,77 +46,6 @@ class Client {
         } else {
             return $this;
         }
-    }
-
-    /**
-     * Handshake with socket.io server
-     *
-     * @access public
-     * @return bool
-     */
-    public function handshake() {
-        $ch = curl_init($this->socketIOUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $res = curl_exec($ch);
-
-        if ($res === false) {
-            throw new \Exception(curl_error($ch));
-        }
-
-        $sess = explode(':', $res);
-        $this->session['sid'] = $sess[0];
-        $this->session['heartbeat_timeout'] = $sess[1];
-        $this->session['connection_timeout'] = $sess[2];
-        $this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
-        if (!isset($this->session['supported_transports']['websocket'])) {
-            throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
-        }
-
-        return true;
-    }
-
-    /**
-     * Connects using websocket protocol
-     *
-     * @access public
-     * @return bool
-     */
-    public function connect() {
-        $this->fd = fsockopen($this->serverHost, $this->serverPort, $errno, $errstr);
-
-        if (!$this->fd) {
-            throw new \Exception('fsockopen returned: '.$errstr);
-        }
-
-        $out  = "GET /socket.io/1/websocket/".$this->session['sid']." HTTP/1.1\r\n";
-        $out .= "Upgrade: WebSocket\r\n";
-        $out .= "Connection: Upgrade\r\n";
-        $out .= "Host: ".$this->serverHost."\r\n";
-        $out .= "Origin: *\r\n\r\n";
-        fwrite($this->fd, $out);
-        $res = fgets($this->fd);
-
-        if ($res === false) {
-            throw new \Exception('Socket.io did not respond properly. Aborting...');
-        }
-
-        if ($subres = substr($res, 0, 12) != 'HTTP/1.1 101') {
-            throw new \Exception('Unexpected Response. Expected HTTP/1.1 101 got '.$subres.'. Aborting...');
-        }
-
-        while(true) {
-            $res = trim(fgets($this->fd));
-            if ($res === '') break;
-        }
-
-        if ($this->read() != '1::') {
-            throw new \Exception('Socket.io did not send connect response. Aborting...');
-        } else {
-            $this->stdout('info', 'Server report us as connected !');
-        }
-
-        $this->send(self::TYPE_CONNECT);
-        $this->heartbeatStamp = time();
     }
 
     /**
@@ -231,6 +160,77 @@ class Client {
         }
 
         fwrite(STDOUT, "\033[".$typeMap[$type][0]."m".$typeMap[$type][1]."\033[37m  ".$message."\r\n");
+    }
+
+    /**
+     * Handshake with socket.io server
+     *
+     * @access private
+     * @return bool
+     */
+    private function handshake() {
+        $ch = curl_init($this->socketIOUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $res = curl_exec($ch);
+
+        if ($res === false) {
+            throw new \Exception(curl_error($ch));
+        }
+
+        $sess = explode(':', $res);
+        $this->session['sid'] = $sess[0];
+        $this->session['heartbeat_timeout'] = $sess[1];
+        $this->session['connection_timeout'] = $sess[2];
+        $this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
+        if (!isset($this->session['supported_transports']['websocket'])) {
+            throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
+        }
+
+        return true;
+    }
+
+    /**
+     * Connects using websocket protocol
+     *
+     * @access private
+     * @return bool
+     */
+    private function connect() {
+        $this->fd = fsockopen($this->serverHost, $this->serverPort, $errno, $errstr);
+
+        if (!$this->fd) {
+            throw new \Exception('fsockopen returned: '.$errstr);
+        }
+
+        $out  = "GET /socket.io/1/websocket/".$this->session['sid']." HTTP/1.1\r\n";
+        $out .= "Upgrade: WebSocket\r\n";
+        $out .= "Connection: Upgrade\r\n";
+        $out .= "Host: ".$this->serverHost."\r\n";
+        $out .= "Origin: *\r\n\r\n";
+        fwrite($this->fd, $out);
+        $res = fgets($this->fd);
+
+        if ($res === false) {
+            throw new \Exception('Socket.io did not respond properly. Aborting...');
+        }
+
+        if ($subres = substr($res, 0, 12) != 'HTTP/1.1 101') {
+            throw new \Exception('Unexpected Response. Expected HTTP/1.1 101 got '.$subres.'. Aborting...');
+        }
+
+        while(true) {
+            $res = trim(fgets($this->fd));
+            if ($res === '') break;
+        }
+
+        if ($this->read() != '1::') {
+            throw new \Exception('Socket.io did not send connect response. Aborting...');
+        } else {
+            $this->stdout('info', 'Server report us as connected !');
+        }
+
+        $this->send(self::TYPE_CONNECT);
+        $this->heartbeatStamp = time();
     }
 
     /**
