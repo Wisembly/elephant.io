@@ -1,12 +1,14 @@
 <?php
 
+namespace ElephantIO;
+
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
  *
  * @author Ludovic Barreca <ludovic@balloonup.com>
  */
-class ElephantIOClient {
+class Client {
     const TYPE_DISCONNECT   = 0;
     const TYPE_CONNECT      = 1;
     const TYPE_HEARTBEAT    = 2;
