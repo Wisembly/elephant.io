@@ -13,3 +13,7 @@ Only websocket transport is available at the moment.
 ## Licence
 
 This software is distributed under MIT Licence. See LICENCE for more info.
+
+## Special Thanks
+
+Special thanks goes to Mark Karpeles who helped me a bit to understand the way websockets works.
