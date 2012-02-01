@@ -23,6 +23,7 @@ class ElephantIOClient {
     private $session;
     private $fd;
     private $buffer;
+    private $lastId = 0;
 
     public function __construct($socketIOUrl, $protocol = 1) {
         $this->socketIOUrl = $socketIOUrl.'/socket.io/'.(string)$protocol;
@@ -186,6 +187,17 @@ class ElephantIOClient {
         $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
     }
 
+
+    /**
+     * Emit an event
+     *
+     * @param string $event
+     * @param array $args
+     * @param function $callback
+     */
+    public function emit($event, $args, $callback = null) {
+        // to be implemented
+    }
 
     /**
      * Send ANSI formatted message to stdout.
