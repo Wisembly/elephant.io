@@ -52,6 +52,7 @@ class Client {
      * Keep the connection alive and dispatch events
      *
      * @access public
+     * @todo work on callbacks
      */
     public function keepAlive() {
         while(true) {
@@ -130,10 +131,16 @@ class Client {
      *
      * @param string $event
      * @param array $args
-     * @param function $callback
+     * @param string $endpoint
+     * @param function $callback - ignored for the time being
+     * @todo work on callbacks
      */
-    public function emit($event, $args, $callback = null) {
-        // to be implemented
+    public function emit($event, $args, $endpoint, $callback = null) {
+        $this->send(5, null, $endpoint, json_encode(array(
+            'name' => $event,
+            'args' => $args,
+            )
+        ));
     }
 
     /**
