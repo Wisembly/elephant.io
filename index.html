@@ -1,1 +1,193 @@
-Hello elephant.io
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Elephant.io: a library for php realtime apps using socket.io.</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+        <link href="css/main.css" rel="stylesheet" media="all">
+        <link href="css/prettify-sunburst.css" rel="stylesheet" media="all">
+
+        <script src="js/google-code-prettify/prettify.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                function loadContent(hash) {
+                    $("div#content").html($("div#page-"+hash).html());
+                    $("#menu li.active").removeClass('active');
+                    $("a."+hash).parent().addClass('active');
+                }
+
+                if (location.hash) {
+                    loadContent(location.hash.substr(1));
+                } else {
+                    loadContent('home');
+                }
+
+                $("a.home").click(function() {
+                    loadContent('home');
+                });
+
+                $("a.usage").click(function() {
+                    loadContent('usage');
+                });
+
+                $("a.methods").click(function() {
+                    loadContent('methods');
+                });
+
+                $("a.future").click(function() {
+                    loadContent('future');
+                });
+            });
+        </script>
+    </head>
+    <body onload="prettyPrint()">
+        <div id="header">
+            <img id="logo" src="img/logo.png" alt="elephant.io" width="400" />
+            <a href="https://github.com/Balloon/elephant.io"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
+            <ul id="menu">
+                <li class="active"><a class="home" href="#home">Home</a></li>
+                <li><a class="usage" href="#usage">Usage</a></li>
+                <li><a class="methods" href="#methods">Methods</a></li>
+                <li><a class="future" href="#future">Future</a></li>
+            </ul>
+        </div>
+        <div id="content">
+        </div>
+        <div id="hidden-content" style="display: none;">
+            <div id="page-home">
+                <h2>What is elephant.io ?</h2>
+                <p>
+                    Elephant.io is a light and easy to use library that aims to bring some real-time functionality to a PHP application through socket.io and websockets.<br />
+                    It provides a socket.io client fully writtent in PHP that should be usable everywhere in your project.
+                </p>
+                <h2>Requirements</h2>
+                <div class="transparent-block">
+                    <p>For elephant.io magic to operate, the following dependencies must be fulfilled :</p>
+                    <ul>
+                        <li>Socket.IO 0.8.0</li>
+                        <li>PHP 5.3</li>
+                        <li>NodeJS 0.6.5</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="page-usage">
+                <h2>Close connection when finished (recommended)</h2>
+                <p>
+                    The classic connection. It will allow you to connect to your socket.io instance and then emits something to it.
+                    It will then disconnect at the end of the script. We recommend using this for the time being.
+                </p>
+                <div class="example">
+                    <pre class="prettyprint">
+                        <code class="language-php">
+require('ElephantIOClient.class.php');
+
+$elephant = new ElephantIOClient('http://localhost:1337');
+
+$elephant->init();
+$elephant->send(ElephantIOClient::TYPE_MESSAGE, null, null, 'Hello World!');
+                        </code>
+                    </pre>
+                </div>
+
+                <h2>Making a persistent connection (not recommended)</h2>
+                <p>
+                    For a persistent connection, here is an example of how to initiate the connection and emit an Hello World message.
+                    Once the message is sent, the connection will be kept with the socket.io server. It is still not recommended to use this at the time,
+                    as this feature is being at an early stage of development.
+                </p>
+                <div class="example">
+                    <pre class="prettyprint">
+                        <code class="language-php">
+require('ElephantIOClient.class.php');
+
+$elephant = new ElephantIOClient('http://localhost:1337');
+
+$elephant->init();
+$elephant->send(ElephantIOClient::TYPE_MESSAGE, null, null, 'Hello World!');
+$elephant->keepAlive();
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            <div id="page-methods">
+                <h2>Available Methods</h2>
+                <p>
+                <b>init($keepalive = false)</b><br />
+                Init will initialize the connection to socket.io<br /><br />
+                <b>Parameters:</b><br />
+                $keepalive - boolean - If true, the init launch keepAlive() at the end of the method
+                <br /><br /><br /><br />
+
+                <b>keepAlive()</b><br />
+                keepAlive make a persistent connection with socket.io by sending back heartbeats.
+                <br /><br /><br /><br />
+
+                <b>read()</b><br />
+                Read retrieve the latest incoming data.
+                <br /><br /><br /><br />
+
+                <b>send($type, $id = null, $endpoint = null, $message = null)</b><br />
+                Send allow you to send message to socket.io.<br /><br />
+                <b>Parameters:</b><br />
+                $type - integer - the message type, you can use constants for more ease. Available constants:
+                <ul>
+                    <li>self::TYPE_DISCONNECT</li>
+                    <li>self::TYPE_CONNECT</li>
+                    <li>self::TYPE_HEARTBEAT</li>
+                    <li>self::TYPE_MESSAGE</li>
+                    <li>self::TYPE_JSON_MESSAGE</li>
+                    <li>self::TYPE_EVENT</li>
+                    <li>self::TYPE_ACK</li>
+                    <li>self::TYPE_ERROR</li>
+                    <li>self::TYPE_NOOP</li>
+                </ul>
+                $id - integer - optionnal id used for ack<br />
+                $endpoint - string - optionnal socket.io endpoint<br />
+                $message - string - optionnal message to transmit<br /><br />
+                <b>Example:</b>
+                <div class="example">
+                    <pre class="prettyprint">
+                        <code class="language-php">
+$client->init();
+$client->send(Client::TYPE_MESSAGE, null, null, ‘Hello World!’);
+                        </code>
+                    </pre>
+                </div>
+
+                <br /><br />
+                <b>stdout($type, $message)</b><br />
+                Allow you to print messages to stdout when executing in CLI.<br /><br />
+                <b>Parameters:</b><br />
+                $type - string - the type of your message must be one of the following:<br />
+                debug,<br />
+                info,<br />
+                error,<br />
+                ok<br />
+                $message - string - the message to print<br /><br />
+                <b>Example:</b>
+                <div class="example">
+                    <pre class="prettyprint">
+                        <code class="language-php">
+$client->stdout(‘debug’, ‘connected!’);
+                        </code>
+                    </pre>
+                </div>
+            </div>
+            <div id="page-future">
+                <h2>Future Features :</h2>
+                <ul>
+                    <li>More user-friendly methods to communicate with socket.io</li>
+                    <li>Better callback management</li>
+                </ul>
+                <p>
+                    More to come... Feel free to submit your features requests on our github issues page !
+                </p>
+            </div>
+        </div>
+        <div id="footer">
+            <hr />
+            Elephant.io by <a href="https://github.com/ludovicbarreca">Barreca Ludovic</a> at <a href="http://www.balloonup.com">Balloon</a>. Licensed under MIT License - Copyright Balloon, Barreca Ludovic 2012
+        </div>
+    </body>
+</html>
