@@ -117,6 +117,7 @@ class Client {
      * @param int $id
      * @param int $endpoint
      * @param string $message
+     * @return ElephantIO\Client
      */
     public function send($type, $id = null, $endpoint = null, $message = null) {
         if (!is_int($type) || $type > 8) {
@@ -125,6 +126,8 @@ class Client {
 
         fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
         $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
+
+        return $this;
     }
 
 
@@ -143,6 +146,22 @@ class Client {
             'args' => $args,
             )
         ));
+    }
+
+    /**
+     * Close the socket
+     *
+     * @return boolean
+     */
+    public function close()
+    {
+        if ($this->fd) {
+            fclose($this->fd);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
