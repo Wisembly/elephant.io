@@ -26,9 +26,11 @@ class Client {
     private $fd;
     private $buffer;
     private $lastId = 0;
+    private $read;
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1) {
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
+        $this->read = $read;
         $this->parseUrl();
     }
 
@@ -230,10 +232,12 @@ class Client {
             if ($res === '') break;
         }
 
-        if ($this->read() != '1::') {
-            throw new \Exception('Socket.io did not send connect response. Aborting...');
-        } else {
-            $this->stdout('info', 'Server report us as connected !');
+        if ($this->read) {
+            if ($this->read() != '1::') {
+                throw new \Exception('Socket.io did not send connect response. Aborting...');
+            } else {
+                $this->stdout('info', 'Server report us as connected !');
+            }
         }
 
         $this->send(self::TYPE_CONNECT);
