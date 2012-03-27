@@ -126,6 +126,7 @@ class Client {
 
         fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
         $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
+        usleep(300*1000);
 
         return $this;
     }
