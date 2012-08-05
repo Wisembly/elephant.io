@@ -28,9 +28,12 @@ class Client {
     private $lastId = 0;
     private $read;
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true) {
+    private $debug;
+
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->read = $read;
+        $this->debug = $debug;
         $this->parseUrl();
     }
 
@@ -174,9 +177,10 @@ class Client {
      * @param string $message
      */
     public function stdout($type, $message) {
-        if (!defined('STDOUT')) {
+        if (!defined('STDOUT') || !$this->debug) {
             return false;
         }
+
         $typeMap = array(
             'debug'   => array(36, '- debug -'),
             'info'    => array(37, '- info  -'),
