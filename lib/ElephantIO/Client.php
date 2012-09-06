@@ -231,12 +231,18 @@ class Client {
             throw new \Exception('fsockopen returned: '.$errstr);
         }
 
+        $key = $this->generateKey();
+
         $out  = "GET /socket.io/1/websocket/".$this->session['sid']." HTTP/1.1\r\n";
+        $out .= "Host: ".$this->serverHost."\r\n";
         $out .= "Upgrade: WebSocket\r\n";
         $out .= "Connection: Upgrade\r\n";
-        $out .= "Host: ".$this->serverHost."\r\n";
+        $out .= "Sec-WebSocket-Key: ".$key."\r\n";
+        $out .= "Sec-WebSocket-Version: 13\r\n";
         $out .= "Origin: *\r\n\r\n";
+
         fwrite($this->fd, $out);
+
         $res = fgets($this->fd);
 
         if ($res === false) {
@@ -260,7 +266,7 @@ class Client {
             }
         }
 
-        $this->send(self::TYPE_CONNECT);
+//        $this->send(self::TYPE_CONNECT);
         $this->heartbeatStamp = time();
     }
 
@@ -283,5 +289,12 @@ class Client {
         }
 
         return true;
+    }
+
+    private function generateKey($length = 16) {
+        while(@$c++ * 16 < $length)
+            @$tmp .= md5(mt_rand(), true);
+
+        return base64_encode(substr($tmp, 0, $length));
     }
 }
