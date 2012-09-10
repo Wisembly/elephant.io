@@ -2,24 +2,10 @@
 
 <?php
 
-require('lib/ElephantIO/Client.php');
-require('lib/ElephantIO/Payload.php');
+require_once('lib/ElephantIO/Client.php');
 
-$elephant = new ElephantIO\Client('http://localhost:1337', 'socket.io', 1, false);
+$elephant = new ElephantIO\Client('https://localhost:447', 'socket.io', 1, false);
 
-$elephant->init(false);
-$elephant->send(ElephantIO\Client::TYPE_MESSAGE, null, null, 'Hello World!');
+$elephant->init(false, false);
+$elephant->send(ElephantIO\Client::TYPE_MESSAGE, null, null, 'Hello');
 
-use ElephantIO\Payload as Payload;
-
-$mask = 0xAF149B;
-$message = "2:::";
-
-$payload = new Payload();
-$payload->setOpcode(Payload::OPCODE_TEXT)
-    ->setLength(strlen($message))
-    ->setMaskKey($mask)
-    ->setPayload($message)
-;
-
-var_dump($payload->encodePayload());

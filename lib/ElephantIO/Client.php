@@ -2,6 +2,9 @@
 
 namespace ElephantIO;
 
+require_once('lib/ElephantIO/Payload.php');
+
+
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
@@ -27,6 +30,7 @@ class Client {
     private $buffer;
     private $lastId = 0;
     private $read;
+    private $checkSslPeer = true;
 
     public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
@@ -40,7 +44,8 @@ class Client {
      * @param boolean $keepalive
      * @return ElephantIOClient
      */
-    public function init($keepalive = false) {
+    public function init($keepalive = false, $checkSslPeer = true) {
+        $this->checkSslPeer = !!$checkSslPeer;
         $this->handshake();
         $this->connect();
         if ($keepalive) {
@@ -124,9 +129,19 @@ class Client {
             throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
         }
 
-        fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
-        $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
-        usleep(300*1000);
+        $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
+        $payload = new Payload();
+        $payload->setOpcode(Payload::OPCODE_TEXT)
+            ->setLength(strlen($raw_message))
+            ->setMaskKey($this->generateMask())
+            ->setPayload($raw_message)
+        ;
+        $encoded = $payload->encodePayload();
+        fwrite($this->fd, $encoded);
+        var_dump($encoded);
+        usleep(3000*1000);
+
+        $this->stdout('debug', 'Sent '.$raw_message);
 
         return $this;
     }
@@ -200,6 +215,10 @@ class Client {
     private function handshake() {
         $ch = curl_init($this->socketIOUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        if (!$this->checkSslPeer)
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
         $res = curl_exec($ch);
 
         if ($res === false) {
@@ -296,5 +315,9 @@ class Client {
             @$tmp .= md5(mt_rand(), true);
 
         return base64_encode(substr($tmp, 0, $length));
+    }
+
+    private function generateMask() {
+        return base_convert(substr(base_convert(substr(md5(uniqid()), 0, 8), 16, 2), 0, 32), 2, 16);
     }
 }

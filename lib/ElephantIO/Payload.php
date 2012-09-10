@@ -26,7 +26,7 @@ class Payload
     private $rsv2 = 0x0;
     private $rsv3 = 0x0;
     private $opcode;
-    private $mask = 0x1;
+    private $mask = 0x0;
     private $length;
     private $maskKey;
     private $payload;
@@ -118,6 +118,7 @@ class Payload
     public function setMaskKey($maskKey)
     {
         $this->maskKey = $maskKey;
+        $this->mask = 0x1;
 
         return $this;
     }
@@ -147,9 +148,14 @@ class Payload
         $payload = (($payload) << 4) | ($this->getOpcode());
         $payload = (($payload) << 1) | ($this->getMask());
         $payload = (($payload) << 7) | ($this->getLength());
-        $payload = (($payload) << 32) | ($this->getMaskKey());
+
+        if ($this->getMask() == 0x1) {
+            $payload = (($payload) << 32) | (base_convert($this->getMaskKey(), 16, 10));
+        }
+
         $payload = dechex($payload);
-        $payload = $payload.$this->getPayload();
+        var_dump(base_convert($this->getMaskKey(), 16, 2));
+        $payload = $payload.bin2hex($this->getPayload());
 
         return $payload;
     }
