@@ -32,10 +32,11 @@ class Client {
     private $read;
     private $checkSslPeer = true;
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true) {
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->read = $read;
         $this->parseUrl();
+        $this->checkSslPeer = $checkSslPeer;
     }
 
     /**
@@ -44,8 +45,7 @@ class Client {
      * @param boolean $keepalive
      * @return ElephantIOClient
      */
-    public function init($keepalive = false, $checkSslPeer = true) {
-        $this->checkSslPeer = !!$checkSslPeer;
+    public function init($keepalive = false) {
         $this->handshake();
         $this->connect();
         if ($keepalive) {
