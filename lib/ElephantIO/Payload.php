@@ -137,8 +137,12 @@ class Payload
             $payload = (($payload) << 7) | 126;
             $payload = pack('n', $payload).pack('n*', $this->getLength());
         } else {
-            throw new Exception('data too long : to be implemented');
             $payload = (($payload) << 7) | 127;
+            $left = 0xffffffff00000000;
+            $right = 0x00000000ffffffff;
+            $l = ($this->getLength() & $left) >> 32;
+            $r = $this->getLength() & $right;
+            $payload = pack('n', $payload).pack('NN', $l, $r);
         }
 
         if ($this->getMask() == 0x1) {
