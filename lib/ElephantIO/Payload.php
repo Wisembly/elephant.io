@@ -27,117 +27,99 @@ class Payload
     private $rsv3 = 0x0;
     private $opcode;
     private $mask = 0x0;
-    private $length;
     private $maskKey;
     private $payload;
 
-    public function setFin($fin)
-    {
+    public function setFin($fin) {
         $this->fin = $fin;
 
         return $this;
     }
 
-    public function getFin()
-    {
+    public function getFin() {
         return $this->fin;
     }
 
-    public function setRsv1($rsv1)
-    {
+    public function setRsv1($rsv1) {
         $this->rsv1 = $rsv1;
 
         return $this;
     }
 
-    public function getRsv1()
-    {
+    public function getRsv1() {
         return $this->rsv1;
     }
 
-    public function setRsv2($rsv2)
-    {
+    public function setRsv2($rsv2) {
         $this->rsv2 = $rsv2;
 
         return $this;
     }
 
-    public function getRsv2()
-    {
+    public function getRsv2() {
         return $this->rsv2;
     }
 
-    public function setRsv3($rsv3)
-    {
+    public function setRsv3($rsv3) {
         $this->rsv3 = $rsv3;
 
         return $this;
     }
 
-    public function getRsv3()
-    {
+    public function getRsv3() {
         return $this->rsv3;
     }
 
-    public function setOpcode($opcode)
-    {
+    public function setOpcode($opcode) {
         $this->opcode = $opcode;
 
         return $this;
     }
 
-    public function getOpcode()
-    {
+    public function getOpcode() {
         return $this->opcode;
     }
 
-    public function setMask($mask)
-    {
+    public function setMask($mask) {
         $this->mask = $mask;
+
+        if ($this->mask == true) {
+            $this->generateMaskKey();
+        }
 
         return $this;
     }
 
-    public function getMask()
-    {
+    public function getMask() {
         return $this->mask;
     }
 
-    public function setLength($length)
-    {
-        $this->length = $length;
-
-        return $this;
+    public function getLength() {
+        return strlen($this->getPayload());
     }
 
-    public function getLength()
-    {
-        return $this->length;
-    }
-
-    public function setMaskKey($maskKey)
-    {
+    public function setMaskKey($maskKey) {
         $this->maskKey = $maskKey;
-        $this->mask = 0x1;
 
         return $this;
     }
 
-    public function getMaskKey()
-    {
+    public function getMaskKey() {
         return $this->maskKey;
     }
 
-    public function setPayload($payload)
-    {
+    public function setPayload($payload) {
         $this->payload = $payload;
 
         return $this;
     }
 
-    public function getPayload()
-    {
+    public function getPayload() {
         return $this->payload;
+    }
+
+    public function generateMaskKey() {
+        $this->setMaskKey(openssl_random_pseudo_bytes(4));
     }
 
     public function encodePayload()
@@ -147,16 +129,37 @@ class Payload
         $payload = (($payload) << 1) | ($this->getRsv3());
         $payload = (($payload) << 4) | ($this->getOpcode());
         $payload = (($payload) << 1) | ($this->getMask());
-        $payload = (($payload) << 7) | ($this->getLength());
 
-        if ($this->getMask() == 0x1) {
-            $payload = (($payload) << 32) | (base_convert($this->getMaskKey(), 16, 10));
+        if ($this->getLength() <= 125) {
+            $payload = (($payload) << 7) | ($this->getLength());
+            $payload = pack('n', $payload);
+        } elseif ($this->getLength() <= 0xffff) {
+            $payload = (($payload) << 7) | 126;
+            $payload = pack('n', $payload).pack('n*', $this->getLength());
+        } else {
+            throw new Exception('data too long : to be implemented');
+            $payload = (($payload) << 7) | 127;
         }
 
-        $payload = dechex($payload);
-        var_dump(base_convert($this->getMaskKey(), 16, 2));
-        $payload = $payload.bin2hex($this->getPayload());
+        if ($this->getMask() == 0x1) {
+            $payload .= $this->getMaskKey();
+            $data = $this->maskData($this->getPayload(), $this->getMaskKey());
+        } else {
+            $data = $this->getPayload();
+        }
+
+        $payload = $payload.$data;
 
         return $payload;
+    }
+
+    public function maskData($data, $key) {
+        $masked = '';
+
+        for ($i = 0; $i < strlen($data); $i++) {
+            $masked .= $data[$i] ^ $key[$i % 4];
+        }
+
+        return $masked;
     }
 }

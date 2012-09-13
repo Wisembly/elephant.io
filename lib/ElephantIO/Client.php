@@ -132,14 +132,12 @@ class Client {
         $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
         $payload = new Payload();
         $payload->setOpcode(Payload::OPCODE_TEXT)
-            ->setLength(strlen($raw_message))
-            ->setMaskKey($this->generateMask())
+            ->setMask(true)
             ->setPayload($raw_message)
         ;
         $encoded = $payload->encodePayload();
         fwrite($this->fd, $encoded);
-        var_dump($encoded);
-        usleep(3000*1000);
+        usleep(300*1000);
 
         $this->stdout('debug', 'Sent '.$raw_message);
 
@@ -315,9 +313,5 @@ class Client {
             @$tmp .= md5(mt_rand(), true);
 
         return base64_encode(substr($tmp, 0, $length));
-    }
-
-    private function generateMask() {
-        return base_convert(substr(base_convert(substr(md5(uniqid()), 0, 8), 16, 2), 0, 32), 2, 16);
     }
 }
