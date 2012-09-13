@@ -2,7 +2,7 @@
 
 namespace ElephantIO;
 
-require_once('lib/ElephantIO/Payload.php');
+require_once(__DIR__.'/Payload.php');
 
 
 /**
