@@ -14,5 +14,10 @@
     },
     "autoload": {
         "psr-0": { "ElephantIO": "lib/" }
+    },
+    "extra": {
+        "dev-master": "v1.0.0-alpha",
+        "dev-hybi16": "v2.0.0-alpha"
     }
+
 }
