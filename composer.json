@@ -1,5 +1,5 @@
 {
-    "name": "balloon/elephant.io",
+    "name": "wisembly/elephant.io",
     "type": "Lib",
     "description": "Send events to socket.io though PHP",
     "keywords": ["Nodejs", "Socket.io", "WebSocket"],
