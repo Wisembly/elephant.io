@@ -207,6 +207,13 @@ class Client {
         fwrite(STDOUT, "\033[".$typeMap[$type][0]."m".$typeMap[$type][1]."\033[37m  ".$message."\r\n");
     }
 
+    public function generateKey($length = 16) {
+        while(@$c++ * 16 < $length)
+            @$tmp .= md5(mt_rand(), true);
+
+        return base64_encode(substr($tmp, 0, $length));
+    }
+
     /**
      * Handshake with socket.io server
      *
@@ -311,10 +318,4 @@ class Client {
         return true;
     }
 
-    private function generateKey($length = 16) {
-        while(@$c++ * 16 < $length)
-            @$tmp .= md5(mt_rand(), true);
-
-        return base64_encode(substr($tmp, 0, $length));
-    }
 }

@@ -119,7 +119,9 @@ class Payload
     }
 
     public function generateMaskKey() {
-        $this->setMaskKey(openssl_random_pseudo_bytes(4));
+        $this->setMaskKey($key = openssl_random_pseudo_bytes(4));
+
+        return $key;
     }
 
     public function encodePayload()
