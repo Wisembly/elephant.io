@@ -2,9 +2,9 @@
 
 <?php
 
-require('ElephantIOClient.class.php');
+require_once('lib/ElephantIO/Client.php');
 
-$elephant = new ElephantIOClient('http://localhost:1337');
+$elephant = new ElephantIO\Client('https://localhost:447', 'socket.io', 1, false, false);
 
 $elephant->init(false);
-$elephant->send(ElephantIOClient::TYPE_MESSAGE, null, null, 'Hello World!');
+$elephant->send(ElephantIO\Client::TYPE_HEARTBEAT, null, null, null);
