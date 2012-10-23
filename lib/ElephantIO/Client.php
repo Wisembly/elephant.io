@@ -2,6 +2,9 @@
 
 namespace ElephantIO;
 
+require_once(__DIR__.'/Payload.php');
+
+
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
@@ -27,14 +30,15 @@ class Client {
     private $buffer;
     private $lastId = 0;
     private $read;
-
+    private $checkSslPeer = true;
     private $debug;
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $debug = false) {
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->read = $read;
         $this->debug = $debug;
         $this->parseUrl();
+        $this->checkSslPeer = $checkSslPeer;
     }
 
     /**
@@ -127,9 +131,17 @@ class Client {
             throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
         }
 
-        fwrite($this->fd, "\x00".$type.":".$id.":".$endpoint.":".$message."\xff");
-        $this->stdout('debug', 'Sent '.$type.":".$id.":".$endpoint.":".$message);
+        $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
+        $payload = new Payload();
+        $payload->setOpcode(Payload::OPCODE_TEXT)
+            ->setMask(true)
+            ->setPayload($raw_message)
+        ;
+        $encoded = $payload->encodePayload();
+        fwrite($this->fd, $encoded);
         usleep(300*1000);
+
+        $this->stdout('debug', 'Sent '.$raw_message);
 
         return $this;
     }
@@ -195,6 +207,13 @@ class Client {
         fwrite(STDOUT, "\033[".$typeMap[$type][0]."m".$typeMap[$type][1]."\033[37m  ".$message."\r\n");
     }
 
+    public function generateKey($length = 16) {
+        while(@$c++ * 16 < $length)
+            @$tmp .= md5(mt_rand(), true);
+
+        return base64_encode(substr($tmp, 0, $length));
+    }
+
     /**
      * Handshake with socket.io server
      *
@@ -204,6 +223,10 @@ class Client {
     private function handshake() {
         $ch = curl_init($this->socketIOUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        if (!$this->checkSslPeer)
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
         $res = curl_exec($ch);
 
         if ($res === false) {
@@ -235,12 +258,18 @@ class Client {
             throw new \Exception('fsockopen returned: '.$errstr);
         }
 
+        $key = $this->generateKey();
+
         $out  = "GET /socket.io/1/websocket/".$this->session['sid']." HTTP/1.1\r\n";
+        $out .= "Host: ".$this->serverHost."\r\n";
         $out .= "Upgrade: WebSocket\r\n";
         $out .= "Connection: Upgrade\r\n";
-        $out .= "Host: ".$this->serverHost."\r\n";
+        $out .= "Sec-WebSocket-Key: ".$key."\r\n";
+        $out .= "Sec-WebSocket-Version: 13\r\n";
         $out .= "Origin: *\r\n\r\n";
+
         fwrite($this->fd, $out);
+
         $res = fgets($this->fd);
 
         if ($res === false) {
@@ -264,7 +293,7 @@ class Client {
             }
         }
 
-        $this->send(self::TYPE_CONNECT);
+//        $this->send(self::TYPE_CONNECT);
         $this->heartbeatStamp = time();
     }
 
@@ -288,4 +317,5 @@ class Client {
 
         return true;
     }
+
 }
