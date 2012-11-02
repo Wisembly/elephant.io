@@ -58,16 +58,23 @@
             <div id="page-home">
                 <h2>What is elephant.io ?</h2>
                 <p>
-                    Elephant.io is a light and easy to use library that aims to bring some real-time functionality to a PHP application through socket.io and websockets.<br />
-                    It provides a socket.io client fully writtent in PHP that should be usable everywhere in your project.
+                    Elephant.io provides a <strong>socket.io client fully written in PHP</strong> that should be usable everywhere in your project.
+                </p>
+                <p>
+                    It is a light and easy to use library that aims to bring some real-time functionality to a PHP application through socket.io and websockets for actions that could not be done in full javascript, such as:
+                    <ul>
+                        <li>backend agregation cron tasks,</li>
+                        <li>REST full backend APIs</li>
+                        <li>and more..</li>
+                    </ul>
                 </p>
                 <h2>Requirements</h2>
                 <div class="transparent-block">
                     <p>For elephant.io magic to operate, the following dependencies must be fulfilled :</p>
                     <ul>
-                        <li>Socket.IO 0.8.0</li>
-                        <li>PHP 5.3</li>
-                        <li>NodeJS 0.6.5</li>
+                        <li>Socket.IO 0.8+</li>
+                        <li>PHP 5.3+</li>
+                        <li>NodeJS 0.6.5+</li>
                     </ul>
                 </div>
             </div>
@@ -77,20 +84,48 @@
                     The classic connection. It will allow you to connect to your socket.io instance and then emits something to it.
                     It will then disconnect at the end of the script. We recommend using this for the time being.
                 </p>
+
+                <h4>PHP server side:</h4>
                 <div class="example">
                     <pre class="prettyprint">
                         <code class="language-php">
-require('ElephantIOClient.class.php');
+use ElephantIO\Client as Elephant;
 
-$elephant = new ElephantIOClient('http://localhost:1337');
+$elephant = new Elephant('http://localhost:8000', 'socket.io', 1, false, true, true);
 
 $elephant->init();
-$elephant->send(ElephantIOClient::TYPE_MESSAGE, null, null, 'Hello World!');
+$elephant->send(
+    ElephantIOClient::TYPE_EVENT,
+    null,
+    null,
+    json_encode(array('name' => 'foo', 'args' => 'bar'))
+);
+$elephant->close();
+
+echo 'tryin to send `bar` to the event `foo`';
                         </code>
                     </pre>
                 </div>
 
-                <h2>Making a persistent connection (not recommended)</h2>
+                <h4>Socket.io server side:</h4>
+                <div class="example">
+                    <pre class="prettyprint">
+                        <code class="language-php">
+var io = require('socket.io').listen(8000);
+
+io.sockets.on('connection', function (socket) {
+  console.log('user connected!');
+
+  socket.on('foo', function (data) {
+    console.log('here we are in action event and data is: ' + data);
+  });
+});
+                        </code>
+                    </pre>
+
+                </div>
+
+                <h2>Making a persistent connection (not recommended yet)</h2>
                 <p>
                     For a persistent connection, here is an example of how to initiate the connection and emit an Hello World message.
                     Once the message is sent, the connection will be kept with the socket.io server. It is still not recommended to use this at the time,
@@ -181,13 +216,13 @@ $client->stdout(‘debug’, ‘connected!’);
                     <li>Better callback management</li>
                 </ul>
                 <p>
-                    More to come... Feel free to submit your features requests on our github issues page !
+                    More to come... Feel free to submit your features requests on our Github issues page !
                 </p>
             </div>
         </div>
         <div id="footer">
             <hr />
-            Elephant.io by <a href="https://github.com/ludovicbarreca">Barreca Ludovic</a> at <a href="http://www.wisembly.com">Wisembly</a>. Licensed under MIT License - Copyright Wisembly, Barreca Ludovic 2012
+            Elephant.io by <a href="https://github.com/ludovicbarreca">Barreca Ludovic</a> at <a href="http://www.wisembly.com">Wisembly</a>. Licensed under MIT License - Copyright Wisembly 2012
         </div>
     </body>
 </html>
