@@ -84,11 +84,16 @@ class Client {
      *
      * @access public
      * @return string
+     * // https://tools.ietf.org/html/rfc6455#section-5.2
      */
     public function read() {
-        // https://tools.ietf.org/html/rfc6455#section-5.2
-        fread($this->fd, 1); // Ignore first byte, I hope Socket.io does not send fragmented frames, so we don't have to deal with FIN bit. There are alos reserved bit's which are 0 in socket.io, and opcode, which is always "text frame" in Socket.io
-        $payload_len = ord(fread($this->fd, 1)); // There is also masking bit, as MSB, but it's 0 in current Socket.io
+        // Ignore first byte, I hope Socket.io does not send fragmented frames, so we don't have to deal with FIN bit.
+        // There are alos reserved bit's which are 0 in socket.io, and opcode, which is always "text frame" in Socket.io
+        fread($this->fd, 1);
+
+        // There is also masking bit, as MSB, but it's 0 in current Socket.io
+        $payload_len = ord(fread($this->fd, 1));
+
         switch ($payload_len) {
             case 126:
                 $payload_len = unpack("n", fread($this->fd, 2));
@@ -98,8 +103,10 @@ class Client {
                 $this->stdout('error', "Next 8 bytes are 64bit uint payload length, not yet implemented, since PHP can't handle 64bit longs!");
                 break;
         }
+
         $payload = fread($this->fd, $payload_len);
-        $this->stdout('debug', 'Received '.$payload);
+        $this->stdout('debug', 'Received ' . $payload);
+
         return $payload;
     }
 
