@@ -1,8 +1,6 @@
 # Elephant.io
 
-Copyright © 2012. Balloon, Ludovic Barreca
-
-Author: Ludovic Barreca <ludovic@balloonup.com>
+Copyright © 2012. Wisembly
 
 ## About
 
@@ -13,6 +11,15 @@ Only websocket transport is available at the moment.
 ## Licence
 
 This software is distributed under MIT Licence. See LICENCE for more info.
+
+## Contributors
+
+Author:
+    Ludovic Barreca <ludogp2@gmail.com>
+
+Mainteners:
+    Guillaume Potier <guillaume@wisembly.com>
+    Gabriel Majoulet <gabriel@wisembly.com>
 
 ## Special Thanks
 

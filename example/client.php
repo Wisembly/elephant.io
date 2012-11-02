@@ -1,10 +1,17 @@
-#!/usr/bin/php -q
-
 <?php
 
-require_once('lib/ElephantIO/Client.php');
+require( __DIR__ . '/../lib/ElephantIO/Client.php');
+use ElephantIO\Client as ElephantIOClient;
 
-$elephant = new ElephantIO\Client('https://localhost:447', 'socket.io', 1, false, false);
+$elephant = new ElephantIOClient('http://localhost:8000', 'socket.io', 1, false, true, true);
 
-$elephant->init(false);
-$elephant->send(ElephantIO\Client::TYPE_HEARTBEAT, null, null, null);
+$elephant->init();
+$elephant->send(
+    ElephantIOClient::TYPE_EVENT,
+    null,
+    null,
+    json_encode(array('name' => 'action', 'args' => 'foo'))
+);
+$elephant->close();
+
+echo 'tryin to send `foo` to the event called action';
