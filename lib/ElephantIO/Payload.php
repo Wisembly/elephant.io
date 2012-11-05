@@ -30,128 +30,66 @@ class Payload
     private $maskKey;
     private $payload;
 
-    public function setFin($fin) {
-        $this->fin = $fin;
-
-        return $this;
+    /**
+     * Sets all variables in one method
+     * @param {string} $var
+     * @param {mixed} $value
+     * @return {Payload}
+     */
+    public function __set($var,$value){
+        if($var == 'mask' && $value === true)
+            $value = $this->_generateMaskKey();
+        $this->{$var} = $value;
     }
 
-    public function getFin() {
-        return $this->fin;
+    /**
+     * Gets a variable value
+     * @param {string} $var Var name
+     * @return {mixed} Var value
+     */
+    public function __get($var){
+        $value = $this->{$var};
+        if($var == 'length')
+            $value = strlen($this->payload);
+        return $value;
     }
 
-    public function setRsv1($rsv1) {
-        $this->rsv1 = $rsv1;
-
-        return $this;
-    }
-
-    public function getRsv1() {
-        return $this->rsv1;
-    }
-
-    public function setRsv2($rsv2) {
-        $this->rsv2 = $rsv2;
-
-        return $this;
-    }
-
-    public function getRsv2() {
-        return $this->rsv2;
-    }
-
-    public function setRsv3($rsv3) {
-        $this->rsv3 = $rsv3;
-
-        return $this;
-    }
-
-    public function getRsv3() {
-        return $this->rsv3;
-    }
-
-    public function setOpcode($opcode) {
-        $this->opcode = $opcode;
-
-        return $this;
-    }
-
-    public function getOpcode() {
-        return $this->opcode;
-    }
-
-    public function setMask($mask) {
-        $this->mask = $mask;
-
-        if ($this->mask == true) {
-            $this->generateMaskKey();
-        }
-
-        return $this;
-    }
-
-    public function getMask() {
-        return $this->mask;
-    }
-
-    public function getLength() {
-        return strlen($this->getPayload());
-    }
-
-    public function setMaskKey($maskKey) {
-        $this->maskKey = $maskKey;
-
-        return $this;
-    }
-
-    public function getMaskKey() {
-        return $this->maskKey;
-    }
-
-    public function setPayload($payload) {
-        $this->payload = $payload;
-
-        return $this;
-    }
-
-    public function getPayload() {
-        return $this->payload;
-    }
-
-    public function generateMaskKey() {
-        $this->setMaskKey($key = openssl_random_pseudo_bytes(4));
-
-        return $key;
+    /**
+     * Generates mark key
+     * @return {string}
+     */
+    private function _generateMaskKey() {
+        return $key = openssl_random_pseudo_bytes(4);
     }
 
     public function encodePayload()
     {
-        $payload = (($this->getFin()) << 1) | ($this->getRsv1());
-        $payload = (($payload) << 1) | ($this->getRsv2());
-        $payload = (($payload) << 1) | ($this->getRsv3());
-        $payload = (($payload) << 4) | ($this->getOpcode());
-        $payload = (($payload) << 1) | ($this->getMask());
+        $payload = (($this->fin) << 1) | ($this->rsv1);
+        $payload = (($payload) << 1) | ($this->rsv2);
+        $payload = (($payload) << 1) | ($this->rsv3);
+        $payload = (($payload) << 4) | ($this->opcode);
+        $payload = (($payload) << 1) | ($this->mask);
 
-        if ($this->getLength() <= 125) {
-            $payload = (($payload) << 7) | ($this->getLength());
+        if ($this->length <= 125) {
+            $payload = (($payload) << 7) | ($this->length);
             $payload = pack('n', $payload);
-        } elseif ($this->getLength() <= 0xffff) {
+        } elseif ($this->length <= 0xffff) {
             $payload = (($payload) << 7) | 126;
-            $payload = pack('n', $payload).pack('n*', $this->getLength());
+            $payload = pack('n', $payload).pack('n*', $this->length);
         } else {
             $payload = (($payload) << 7) | 127;
             $left = 0xffffffff00000000;
             $right = 0x00000000ffffffff;
-            $l = ($this->getLength() & $left) >> 32;
-            $r = $this->getLength() & $right;
+            $l = ($this->length & $left) >> 32;
+            $r = $this->length & $right;
             $payload = pack('n', $payload).pack('NN', $l, $r);
         }
 
-        if ($this->getMask() == 0x1) {
-            $payload .= $this->getMaskKey();
-            $data = $this->maskData($this->getPayload(), $this->getMaskKey());
+        if ($this->mask == 0x1) {
+            $payload .= $this->maskKey;
+            $data = $this->maskData($this->payload, $this->maskKey);
         } else {
-            $data = $this->getPayload();
+            $data = $this->payload;
         }
 
         $payload = $payload.$data;
