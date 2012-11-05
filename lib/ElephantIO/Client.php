@@ -127,10 +127,9 @@ class Client {
 
         $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
         $payload = new Payload();
-        $payload->setOpcode(Payload::OPCODE_TEXT)
-            ->setMask(true)
-            ->setPayload($raw_message)
-        ;
+        $payload->opcode = Payload::OPCODE_TEXT;
+        $payload->mask = true;
+        $payload->payload = $raw_message;
         $encoded = $payload->encodePayload();
         fwrite($this->fd, $encoded);
         usleep(300*1000);
