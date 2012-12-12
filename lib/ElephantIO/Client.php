@@ -302,7 +302,7 @@ class Client {
         $this->serverHost = $url['host'];
         $this->serverPort = isset($url['port']) ? $url['port'] : null;
 
-        if ($url['scheme'] == 'https') {
+        if (array_key_exists('scheme', $url) && $url['scheme'] == 'https') {
             $this->serverHost = 'ssl://'.$this->serverHost;
             if (!$this->serverPort) {
                 $this->serverPort = 443;
