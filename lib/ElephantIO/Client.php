@@ -299,8 +299,8 @@ class Client {
      */
     private function parseUrl() {
         $url = parse_url($this->socketIOUrl);
-		
-		$this->serverPath = $url['path'];
+
+        $this->serverPath = $url['path'];
         $this->serverHost = $url['host'];
         $this->serverPort = isset($url['port']) ? $url['port'] : null;
 
