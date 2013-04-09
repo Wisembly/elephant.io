@@ -166,7 +166,7 @@ class Client {
     public function close()
     {
         if ($this->fd) {
-			$this->send(self::TYPE_DISCONNECT);
+            $this->send(self::TYPE_DISCONNECT);
             fclose($this->fd);
 
             return true;

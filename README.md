@@ -1,6 +1,8 @@
 # Elephant.io
 
-Copyright © 2012. Wisembly
+[![Build Status](https://travis-ci.org/Wisembly/elephant.io.png?branch=master)](https://travis-ci.org/Wisembly/elephant.io)
+
+MIT Licenced - Copyright © 2012. Wisembly
 
 ## About
 
