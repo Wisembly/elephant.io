@@ -255,7 +255,7 @@ class Client {
 
         $key = $this->generateKey();
 
-        $out  = "GET /socket.io/1/websocket/".$this->session['sid']." HTTP/1.1\r\n";
+        $out  = "GET ".$this->serverPath."/websocket/".$this->session['sid']." HTTP/1.1\r\n";
         $out .= "Host: ".$this->serverHost."\r\n";
         $out .= "Upgrade: WebSocket\r\n";
         $out .= "Connection: Upgrade\r\n";
@@ -300,6 +300,8 @@ class Client {
      */
     private function parseUrl() {
         $url = parse_url($this->socketIOUrl);
+
+        $this->serverPath = $url['path'];
         $this->serverHost = $url['host'];
         $this->serverPort = isset($url['port']) ? $url['port'] : null;
 
