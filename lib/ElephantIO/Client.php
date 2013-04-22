@@ -50,6 +50,7 @@ class Client {
     public function init($keepalive = false) {
         $this->handshake();
         $this->connect();
+
         if ($keepalive) {
             $this->keepAlive();
         } else {
@@ -88,7 +89,7 @@ class Client {
      */
     public function read() {
         // Ignore first byte, I hope Socket.io does not send fragmented frames, so we don't have to deal with FIN bit.
-        // There are alos reserved bit's which are 0 in socket.io, and opcode, which is always "text frame" in Socket.io
+        // There are also reserved bit's which are 0 in socket.io, and opcode, which is always "text frame" in Socket.io
         fread($this->fd, 1);
 
         // There is also masking bit, as MSB, but it's 0 in current Socket.io
@@ -129,17 +130,18 @@ class Client {
         $payload = new Payload();
         $payload->setOpcode(Payload::OPCODE_TEXT)
             ->setMask(true)
-            ->setPayload($raw_message)
-        ;
+            ->setPayload($raw_message);
         $encoded = $payload->encodePayload();
+
         fwrite($this->fd, $encoded);
-        usleep(300*1000);
+
+        // wait 100ms before closing connexion
+        usleep(100*1000);
 
         $this->stdout('debug', 'Sent '.$raw_message);
 
         return $this;
     }
-
 
     /**
      * Emit an event
@@ -151,7 +153,7 @@ class Client {
      * @todo work on callbacks
      */
     public function emit($event, $args, $endpoint, $callback = null) {
-        $this->send(5, null, $endpoint, json_encode(array(
+        $this->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
             'name' => $event,
             'args' => $args,
             )
@@ -179,11 +181,11 @@ class Client {
      * Send ANSI formatted message to stdout.
      * First parameter must be either debug, info, error or ok
      *
-     * @access public
+     * @access private
      * @param string $type
      * @param string $message
      */
-    public function stdout($type, $message) {
+    private function stdout($type, $message) {
         if (!defined('STDOUT') || !$this->debug) {
             return false;
         }
@@ -202,9 +204,13 @@ class Client {
         fwrite(STDOUT, "\033[".$typeMap[$type][0]."m".$typeMap[$type][1]."\033[37m  ".$message."\r\n");
     }
 
-    public function generateKey($length = 16) {
-        while(@$c++ * 16 < $length)
-            @$tmp .= md5(mt_rand(), true);
+    private function generateKey($length = 16) {
+        $c = 0;
+        $tmp = '';
+
+        while($c++ * 16 < $length) {
+            $tmp .= md5(mt_rand(), true);
+        }
 
         return base64_encode(substr($tmp, 0, $length));
     }
@@ -233,6 +239,7 @@ class Client {
         $this->session['heartbeat_timeout'] = $sess[1];
         $this->session['connection_timeout'] = $sess[2];
         $this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
+
         if (!isset($this->session['supported_transports']['websocket'])) {
             throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
         }
