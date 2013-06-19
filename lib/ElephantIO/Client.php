@@ -32,7 +32,7 @@ class Client {
     private $read;
     private $checkSslPeer = true;
     private $debug;
-    private $handshakeTimeout = false;
+    private $handshakeTimeout = null;
 
     public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
@@ -217,7 +217,7 @@ class Client {
     }
 
     /**
-     * Set Handshake timeout in seconds
+     * Set Handshake timeout in milliseconds
      *
      * @param int $delay
      */
@@ -238,9 +238,9 @@ class Client {
         if (!$this->checkSslPeer)
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-        if ($this->handshakeTimeout !== false) {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->handshakeTimeout);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->handshakeTimeout);
+        if (!is_null($this->handshakeTimeout)) {
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, $this->handshakeTimeout);
+            curl_setopt($ch, CURLOPT_TIMEOUT_MS, $this->handshakeTimeout);
         }
 
         $res = curl_exec($ch);
