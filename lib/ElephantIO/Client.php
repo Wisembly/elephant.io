@@ -245,7 +245,7 @@ class Client {
 
         $res = curl_exec($ch);
 
-        if ($res === false) {
+        if ($res === false || $res === '') {
             throw new \Exception(curl_error($ch));
         }
 
