@@ -4,4 +4,6 @@ php:
     - 5.3
     - 5.4
 
-script: phpunit --coverage-text
+script:
+  - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source --dev install
+  - phpunit --configuration phpunit.xml --coverage-text
