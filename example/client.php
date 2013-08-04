@@ -1,6 +1,6 @@
 <?php
+require_once __DIR__.'/../vendor/autoload.php';
 
-require( __DIR__ . '/../lib/ElephantIO/Client.php');
 use ElephantIO\Client as ElephantIOClient;
 
 $elephant = new ElephantIOClient('http://localhost:8000', 'socket.io', 1, false, true, true);
