@@ -1,7 +1,6 @@
 <?php
 namespace ElephantIO;
 
-
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
@@ -50,7 +49,14 @@ class Client {
 
 	private $heartbeatStamp;
 
-	public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
+	public function __construct(
+		$socketIOUrl,
+		$socketIOPath = 'socket.io',
+		$protocol = 1,
+		$read = true,
+		$checkSslPeer = true,
+		$debug = false
+	) {
 		$this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
 		$this->read = $read;
 		$this->debug = $debug;
@@ -62,6 +68,7 @@ class Client {
 	 * Initialize a new connection
 	 *
 	 * @param boolean $keepalive
+	 *
 	 * @return \ElephantIO\Client
 	 */
 	public function init($keepalive = false) {
@@ -117,8 +124,12 @@ class Client {
 				$payload_len = unpack("n", fread($this->fd, 2));
 				$payload_len = $payload_len[1];
 				break;
+
 			case 127:
-				$this->stdout('error', "Next 8 bytes are 64bit uint payload length, not yet implemented, since PHP can't handle 64bit longs!");
+				$this->stdout(
+					'error',
+					"Next 8 bytes are 64bit uint payload length, not yet implemented, since PHP can't handle 64bit longs!"
+				);
 				break;
 		}
 
@@ -260,7 +271,7 @@ class Client {
 	 * @return bool
 	 */
 	private function handshake() {
-		$ch = curl_init($this->socketIOUrl);
+		$ch = curl_init($this->socketIOUrl.'/?t='.time());
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 		if (!$this->checkSslPeer) {
@@ -278,11 +289,11 @@ class Client {
 			throw new \Exception(curl_error($ch));
 		}
 
-		$sess = explode(':', $res);
-		$this->session['sid'] = $sess[0];
-		$this->session['heartbeat_timeout'] = $sess[1];
-		$this->session['connection_timeout'] = $sess[2];
-		$this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
+		$session = explode(':', $res);
+		$this->session['sid'] = $session[0];
+		$this->session['heartbeat_timeout'] = $session[1];
+		$this->session['connection_timeout'] = $session[2];
+		$this->session['supported_transports'] = array_flip(explode(',', $session[3]));
 
 		if (!isset($this->session['supported_transports']['websocket'])) {
 			throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
