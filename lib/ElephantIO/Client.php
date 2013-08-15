@@ -137,7 +137,7 @@ class Client {
         fwrite($this->fd, $encoded);
 
         // wait 100ms before closing connexion
-        usleep(100*1000);
+        //usleep(100*1000);
 
         $this->stdout('debug', 'Sent '.$raw_message);
 
@@ -169,6 +169,7 @@ class Client {
     public function close()
     {
         if ($this->fd) {
+            fgetc($this->fd);
             $this->send(self::TYPE_DISCONNECT);
             fclose($this->fd);
 
