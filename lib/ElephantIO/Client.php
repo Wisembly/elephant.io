@@ -106,7 +106,14 @@ class Client {
                 break;
         }
 
-        $payload = fread($this->fd, $payload_len);
+        //$payload = fread($this->fd, $payload_len); // Does not work if packet size > 16Kb
+        $payload = '';
+        $read    = 0;
+        while( $read < $payload_len && ( $buf = fread( $this->fd, $payload_len - $read ) ) )
+        {
+            $read    += strlen($buf);
+            $payload .= $buf;
+        }
         $this->stdout('debug', 'Received ' . $payload);
 
         return $payload;
