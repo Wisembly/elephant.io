@@ -7,6 +7,14 @@ namespace ElephantIO;
  * Time: 10:36 AM
  * To change this template use File | Settings | File Templates.
  *
+ * Example of usage
+ *
+ * $client = new \ElephantIO\Client(...);
+ *  ... your code ...
+ *
+ * $client->createFrame()->endPoint('/event')->emit('update', array(1,2,3));
+ * $client->close();
+ *
  * @method string getData
  * @method int getType
  * @method mixed getId

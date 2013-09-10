@@ -5,6 +5,13 @@ namespace ElephantIO;
 require_once(__DIR__.'/Payload.php');
 require_once(__DIR__.'/Frame.php');
 
+/**
+ *
+ * NAMESPACES (endpoints)
+ *
+ * emit and send method automatically register socket into received endpoint
+ *
+ */
 
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
@@ -118,6 +125,19 @@ class Client {
 	/**
 	 * Join into socket.io namespace
 	 *
+	 * EXAMPLE:
+	 * $client = new \ElephantIO\Client();
+	 * ...
+	 * //   for entering in some namespace
+	 * $client->of('/event');
+	 * or you can use
+	 *  $client->emit();
+	 *    and
+	 *  $client->send();
+	 *
+	 * if you are not in some endpoint, you will automatically enter
+	 *
+	 *
 	 * @param string $endpoint
 	 *
 	 * @return Client
@@ -135,7 +155,7 @@ class Client {
 	 * @return Client
 	 */
 	public function leaveEndpoint($endpoint) {
-		if (in_array($endpoint, $this->endpoints)) {
+		if ($endpoint && in_array($endpoint, $this->endpoints)) {
 			$data = self::TYPE_DISCONNECT . '::' . $endpoint;
 			$this->write($this->encode($data));
 			unset($this->endpoints[array_search($endpoint, $this->endpoints)]);
@@ -176,6 +196,7 @@ class Client {
 	    if (!is_int($type) || $type > 8) {
 		    throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
 	    }
+	    $this->of($endpoint);
 	    $raw_message = $type . ':' . $id . ':' . $endpoint . ':' . $message;
 	    $this->write($this->encode($raw_message));
 
@@ -194,7 +215,7 @@ class Client {
      * @todo work on callbacks
      */
     public function emit($event, $args, $endpoint, $callback = null) {
-        $this->of($endpoint)->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
+        $this->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
             'name' => $event,
             'args' => $args,
             )
