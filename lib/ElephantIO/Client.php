@@ -3,6 +3,7 @@
 namespace ElephantIO;
 
 require_once(__DIR__.'/Payload.php');
+require_once(__DIR__.'/Frame.php');
 
 
 /**
@@ -25,6 +26,7 @@ class Client {
     private $socketIOUrl;
     private $serverHost;
     private $serverPort = 80;
+	private $serverPath;
     private $session;
     private $fd;
     private $buffer;
@@ -33,6 +35,7 @@ class Client {
     private $checkSslPeer = true;
     private $debug;
     private $handshakeTimeout = null;
+	private $endpoints = array();
 
     public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
@@ -112,6 +115,53 @@ class Client {
         return $payload;
     }
 
+	/**
+	 * Join into socket.io namespace
+	 *
+	 * @param string $endpoint
+	 *
+	 * @return Client
+	 */
+	public function of($endpoint = null) {
+		if ($endpoint && !in_array($endpoint, $this->endpoints)) {
+			$data = self::TYPE_CONNECT . '::' . $endpoint;
+			$this->write($this->encode($data));
+			$this->endpoints[] = $endpoint;
+		}
+		return $this;
+	}
+
+	/**
+	 * @return Client
+	 */
+	public function leaveEndpoint($endpoint) {
+		if (in_array($endpoint, $this->endpoints)) {
+			$data = self::TYPE_DISCONNECT . '::' . $endpoint;
+			$this->write($this->encode($data));
+			unset($this->endpoints[array_search($endpoint, $this->endpoints)]);
+		}
+		return $this;
+	}
+
+	/**
+	 * @return Frame
+	 */
+	public function createFrame() {
+		return new Frame($this);
+	}
+
+	/**
+	 * @param Frame $frame
+	 */
+	public function sendFrame(Frame $frame) {
+		$this->send(
+			$frame->getType(),
+			$frame->getId(),
+			$frame->getEndPoint(),
+			$frame->getData()
+		);
+	}
+
     /**
      * Send message to the websocket
      *
@@ -120,28 +170,18 @@ class Client {
      * @param int $id
      * @param int $endpoint
      * @param string $message
-     * @return ElephantIO\Client
+     * @return \ElephantIO\Client
      */
     public function send($type, $id = null, $endpoint = null, $message = null) {
-        if (!is_int($type) || $type > 8) {
-            throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
-        }
+	    if (!is_int($type) || $type > 8) {
+		    throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
+	    }
+	    $raw_message = $type . ':' . $id . ':' . $endpoint . ':' . $message;
+	    $this->write($this->encode($raw_message));
 
-        $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
-        $payload = new Payload();
-        $payload->setOpcode(Payload::OPCODE_TEXT)
-            ->setMask(true)
-            ->setPayload($raw_message);
-        $encoded = $payload->encodePayload();
+	    $this->stdout('debug', 'Sent ' . $raw_message);
 
-        fwrite($this->fd, $encoded);
-
-        // wait 100ms before closing connexion
-        usleep(100*1000);
-
-        $this->stdout('debug', 'Sent '.$raw_message);
-
-        return $this;
+	    return $this;
     }
 
     /**
@@ -154,29 +194,62 @@ class Client {
      * @todo work on callbacks
      */
     public function emit($event, $args, $endpoint, $callback = null) {
-        $this->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
+        $this->of($endpoint)->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
             'name' => $event,
             'args' => $args,
             )
         ));
     }
 
-    /**
-     * Close the socket
-     *
-     * @return boolean
-     */
-    public function close()
-    {
-        if ($this->fd) {
-            $this->send(self::TYPE_DISCONNECT);
-            fclose($this->fd);
+	/**
+	 * Close the socket
+	 *
+	 * @return boolean
+	 */
+	public function close() {
+		if ($this->fd) {
+			$this->write($this->encode(self::TYPE_DISCONNECT));
+			fclose($this->fd);
+			return true;
+		}
+		return false;
+	}
 
-            return true;
-        }
+	protected function write($data, $sleep = true) {
+		fwrite($this->getSocket(), $data);
+		// wait 100ms before closing connexion
+		if ($sleep) {
+			usleep(100 * 1000);
+		}
+		return $this;
+	}
 
-        return false;
-    }
+	/**
+	 * @return mixed
+	 * @throws \RuntimeException
+	 */
+	private function getSocket() {
+		if (!$this->fd) {
+			throw new \RuntimeException('The connection is lost');
+		}
+		return $this->fd;
+	}
+
+	/**
+	 * @param      $message
+	 * @param int  $opCode
+	 * @param bool $mask
+	 *
+	 * @return string
+	 */
+	private function encode($message, $opCode = Payload::OPCODE_TEXT, $mask = true) {
+		$payload = new Payload();
+		return $payload
+				->setOpcode($opCode)
+				->setMask($mask)
+				->setPayload($message)
+				->encodePayload();
+	}
 
     /**
      * Send ANSI formatted message to stdout.
