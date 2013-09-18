@@ -51,8 +51,14 @@ class Frame {
 	/**
 	 * @param Client $client
 	 */
-	public function __construct(Client $client) {
+	public function __construct(Client $client, $type = null, $endpoint = null) {
 		$this->_client = $client;
+		if ($type) {
+			$this->setType($type);
+		}
+		if ($endpoint) {
+			$this->endPoint($endpoint);
+		}
 	}
 
 	/**

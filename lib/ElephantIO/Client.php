@@ -166,8 +166,8 @@ class Client {
 	/**
 	 * @return Frame
 	 */
-	public function createFrame() {
-		return new Frame($this);
+	public function createFrame($type = null, $endpoint = null) {
+		return new Frame($this, $type, $endpoint);
 	}
 
 	/**
