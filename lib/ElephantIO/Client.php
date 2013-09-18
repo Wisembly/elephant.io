@@ -229,7 +229,7 @@ class Client {
 	 */
 	public function close() {
 		if ($this->fd) {
-			$this->write($this->encode(self::TYPE_DISCONNECT));
+			$this->write($this->encode(self::TYPE_DISCONNECT, Payload::OPCODE_CLOSE));
 			fclose($this->fd);
 			return true;
 		}
