@@ -193,7 +193,7 @@ class Client {
      * @return \ElephantIO\Client
      */
     public function send($type, $id = null, $endpoint = null, $message = null) {
-	    if (!is_int($type) || $type > 8) {
+	    if (!is_int($type) || $type < 0 || $type > 8) {
 		    throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
 	    }
 	    $this->of($endpoint);
