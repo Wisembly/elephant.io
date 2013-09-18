@@ -1,12 +1,6 @@
 <?php
 namespace ElephantIO;
 /**
- * Created by JetBrains PhpStorm.
- * User: once
- * Date: 9/10/13
- * Time: 10:36 AM
- * To change this template use File | Settings | File Templates.
- *
  * Example of usage
  *
  * $client = new \ElephantIO\Client(...);
