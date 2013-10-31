@@ -140,7 +140,10 @@ class Client {
             ->setPayload($raw_message);
         $encoded = $payload->encodePayload();
 
-        fwrite($this->fd, $encoded);
+        $written = fwrite($this->fd, $encoded);
+	    if ($written === false || $written === 0) {
+		    throw new \Exception('Unable to send message to socket.io');
+	    }
 
         // wait 100ms before closing connexion
         usleep(100*1000);
