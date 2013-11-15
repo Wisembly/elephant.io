@@ -95,4 +95,3 @@ EOF
         $this->assertEquals($expected, bin2hex($payload->encodePayload()));
     }
 }
-

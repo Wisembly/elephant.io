@@ -15,4 +15,3 @@ class ClientTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(24, strlen($key));
     }
 }
-

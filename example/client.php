@@ -6,12 +6,7 @@ use ElephantIO\Client as ElephantIOClient;
 $elephant = new ElephantIOClient('http://localhost:8000', 'socket.io', 1, false, true, true);
 
 $elephant->init();
-$elephant->send(
-    ElephantIOClient::TYPE_EVENT,
-    null,
-    null,
-    json_encode(array('name' => 'action', 'args' => 'foo'))
-);
+$elephant->emit('action', 'foo');
 $elephant->close();
 
 echo 'tryin to send `foo` to the event called action';

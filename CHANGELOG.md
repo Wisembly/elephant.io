@@ -1,5 +1,10 @@
 # CHANGELOG
 
+**v2.0.3:**
+
+  - updated `emit()` parameters, `$endpoint` now optional and `null` by default
+  - updated example and README
+
 **v2.0.2:**
 
   - updated generateKey code and accessibility scope. (#15)

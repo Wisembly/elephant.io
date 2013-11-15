@@ -157,10 +157,11 @@ class Client {
      * @param array $args
      * @param string $endpoint
      * @param function $callback - ignored for the time being
+     * @return ElephantIO\Client
      * @todo work on callbacks
      */
-    public function emit($event, $args, $endpoint, $callback = null) {
-        $this->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
+    public function emit($event, $args, $endpoint = null, $callback = null) {
+        return $this->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
             'name' => $event,
             'args' => $args,
             )
@@ -342,5 +343,4 @@ class Client {
 
         return true;
     }
-
 }

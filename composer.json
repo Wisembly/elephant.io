@@ -3,7 +3,7 @@
     "type": "Lib",
     "description": "Send events to socket.io though PHP",
     "keywords": ["Nodejs", "Socket.io", "WebSocket"],
-    "license": "GPL",
+    "license": "MIT",
     "authors": [
         {
             "name": "Ludovic Barreca"
