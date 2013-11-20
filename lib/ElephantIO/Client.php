@@ -33,11 +33,13 @@ class Client {
     private $checkSslPeer = true;
     private $debug;
     private $handshakeTimeout = null;
+    private $namespace = "";
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $namespace = "", $read = true, $checkSslPeer = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->read = $read;
         $this->debug = $debug;
+        $this->namespace = $namespace;
         $this->parseUrl();
         $this->checkSslPeer = $checkSslPeer;
     }
@@ -288,6 +290,7 @@ class Client {
         $out .= "Host: ".$this->serverHost."\r\n";
         $out .= "Upgrade: WebSocket\r\n";
         $out .= "Connection: Upgrade\r\n";
+        $out .= "Resource Name: ".$this->namespace."\r\n";
         $out .= "Sec-WebSocket-Key: ".$key."\r\n";
         $out .= "Sec-WebSocket-Version: 13\r\n";
         $out .= "Origin: *\r\n\r\n";
@@ -317,7 +320,7 @@ class Client {
             }
         }
 
-//        $this->send(self::TYPE_CONNECT);
+        $this->send(self::TYPE_CONNECT, "", $this->namespace);
         $this->heartbeatStamp = time();
     }
 
