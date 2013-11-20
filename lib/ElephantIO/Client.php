@@ -35,7 +35,7 @@ class Client {
     private $handshakeTimeout = null;
     private $namespace = "";
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $namespace = "", $read = true, $checkSslPeer = true, $debug = false) {
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false, $namespace = "") {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->read = $read;
         $this->debug = $debug;
