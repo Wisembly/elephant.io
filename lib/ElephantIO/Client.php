@@ -46,7 +46,7 @@ class Client {
      * Initialize a new connection
      *
      * @param boolean $keepalive
-     * @return ElephantIOClient
+     * @return Client
      */
     public function init($keepalive = false) {
         $this->handshake();
