@@ -34,6 +34,7 @@ class Client {
     private $debug;
     private $handshakeTimeout = null;
     private $callbacks = array();
+    private $handshakeQuery = '';
 
     public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
@@ -41,6 +42,18 @@ class Client {
         $this->debug = $debug;
         $this->parseUrl();
         $this->checkSslPeer = $checkSslPeer;
+    }
+
+    /**
+     * Set query to be sent during handshake.
+     *
+     * @param array $query Query paramters as key => value
+     * @return Client
+     */
+    public function setHandshakeQuery(array $query) {
+        $this->handshakeQuery = '?' . http_build_query($query);
+
+        return $this;
     }
 
     /**
@@ -282,7 +295,13 @@ class Client {
      * @return bool
      */
     private function handshake() {
-        $ch = curl_init($this->socketIOUrl);
+        $url = $this->socketIOUrl;
+
+        if (!empty($this->handshakeQuery)) {
+            $url .= $this->handshakeQuery;
+        }
+
+        $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         if (!$this->checkSslPeer) {
