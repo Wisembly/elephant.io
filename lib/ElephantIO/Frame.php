@@ -8,10 +8,6 @@ namespace ElephantIO;
  *
  * $client->createFrame()->endPoint('/event')->emit('update', array(1,2,3));
  * $client->close();
- *
- * @method mixed getId
- * @method string getEndPoint
- *
  */
 class Frame {
 
