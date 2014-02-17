@@ -3,7 +3,15 @@
 namespace ElephantIO;
 
 require_once(__DIR__.'/Payload.php');
+require_once(__DIR__.'/Frame.php');
 
+/**
+ *
+ * NAMESPACES (endpoints)
+ *
+ * emit and send method automatically register socket into received endpoint
+ *
+ */
 
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
@@ -22,9 +30,14 @@ class Client {
     const TYPE_ERROR        = 7;
     const TYPE_NOOP         = 8;
 
+	public $origin = '*';
+	public $cookie;
+	public $sendCookie = false;
+
     private $socketIOUrl;
     private $serverHost;
     private $serverPort = 80;
+	private $serverPath;
     private $session;
     private $fd;
     private $buffer;
@@ -33,6 +46,7 @@ class Client {
     private $checkSslPeer = true;
     private $debug;
     private $handshakeTimeout = null;
+	private $endpoints = array();
 
     public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
@@ -118,6 +132,66 @@ class Client {
         return $payload;
     }
 
+	/**
+	 * Join into socket.io namespace
+	 *
+	 * EXAMPLE:
+	 * $client = new \ElephantIO\Client();
+	 * ...
+	 * //   for entering in some namespace
+	 * $client->of('/event');
+	 * or you can use
+	 *  $client->emit();
+	 *    and
+	 *  $client->send();
+	 *
+	 * if you are not in some endpoint, you will automatically enter
+	 *
+	 *
+	 * @param string $endpoint
+	 *
+	 * @return Client
+	 */
+	public function of($endpoint = null) {
+		if ($endpoint && !in_array($endpoint, $this->endpoints)) {
+			$data = self::TYPE_CONNECT . '::' . $endpoint;
+			$this->write($this->encode($data));
+			$this->endpoints[] = $endpoint;
+		}
+		return $this;
+	}
+
+	/**
+	 * @return Client
+	 */
+	public function leaveEndpoint($endpoint) {
+		if ($endpoint && in_array($endpoint, $this->endpoints)) {
+			$data = self::TYPE_DISCONNECT . '::' . $endpoint;
+			$this->write($this->encode($data));
+			unset($this->endpoints[array_search($endpoint, $this->endpoints)]);
+		}
+		return $this;
+	}
+
+	/**
+	 * @return Frame
+	 */
+	public function createFrame($type = null, $endpoint = null) {
+		return new Frame($this, $type, $endpoint);
+	}
+
+	/**
+	 * @param Frame $frame
+	 */
+	public function sendFrame(Frame $frame) {
+		$this->send(
+			$frame->getType(),
+			$frame->getId(),
+			$frame->getEndPoint(),
+			$frame->getData()
+		);
+	}
+
     /**
      * Send message to the websocket
      *
@@ -126,28 +200,19 @@ class Client {
      * @param int $id
      * @param int $endpoint
      * @param string $message
-     * @return ElephantIO\Client
+     * @return \ElephantIO\Client
      */
     public function send($type, $id = null, $endpoint = null, $message = null) {
-        if (!is_int($type) || $type > 8) {
-            throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
-        }
+	    if (!is_int($type) || $type < 0 || $type > 8) {
+		    throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
+	    }
+	    $this->of($endpoint);
+	    $raw_message = $type . ':' . $id . ':' . $endpoint . ':' . $message;
+	    $this->write($this->encode($raw_message));
 
-        $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
-        $payload = new Payload();
-        $payload->setOpcode(Payload::OPCODE_TEXT)
-            ->setMask(true)
-            ->setPayload($raw_message);
-        $encoded = $payload->encodePayload();
+	    $this->stdout('debug', 'Sent ' . $raw_message);
 
-        fwrite($this->fd, $encoded);
-
-        // wait 100ms before closing connexion
-        usleep(100*1000);
-
-        $this->stdout('debug', 'Sent '.$raw_message);
-
-        return $this;
+	    return $this;
     }
 
     /**
@@ -168,22 +233,55 @@ class Client {
         ));
     }
 
-    /**
-     * Close the socket
-     *
-     * @return boolean
-     */
-    public function close()
-    {
-        if ($this->fd) {
-            $this->send(self::TYPE_DISCONNECT);
-            fclose($this->fd);
+	/**
+	 * Close the socket
+	 *
+	 * @return boolean
+	 */
+	public function close() {
+		if ($this->fd) {
+			$this->write($this->encode(self::TYPE_DISCONNECT, Payload::OPCODE_CLOSE), false);
+			fclose($this->fd);
+			return true;
+		}
+		return false;
+	}
 
-            return true;
-        }
+	protected function write($data, $sleep = true) {
+		fwrite($this->getSocket(), $data);
+		// wait 100ms before closing connexion
+		if ($sleep) {
+			usleep(100 * 1000);
+		}
+		return $this;
+	}
 
-        return false;
-    }
+	/**
+	 * @return mixed
+	 * @throws \RuntimeException
+	 */
+	private function getSocket() {
+		if (!$this->fd) {
+			throw new \RuntimeException('The connection is lost');
+		}
+		return $this->fd;
+	}
+
+	/**
+	 * @param      $message
+	 * @param int  $opCode
+	 * @param bool $mask
+	 *
+	 * @return string
+	 */
+	private function encode($message, $opCode = Payload::OPCODE_TEXT, $mask = true) {
+		$payload = new Payload();
+		return $payload
+				->setOpcode($opCode)
+				->setMask($mask)
+				->setPayload($message)
+				->encodePayload();
+	}
 
     /**
      * Send ANSI formatted message to stdout.
@@ -232,6 +330,21 @@ class Client {
         $this->handshakeTimeout = $delay;
     }
 
+	/**
+	 * @return string
+	 */
+	private function getOrigin() {
+		$origin = "Origin: *\n\n";
+		if ($this->origin) {
+			if (strpos($this->origin, 'http://') === false) {
+				$origin = sprintf("Origin: http://%s\n\n", $this->origin);
+			} else {
+				$origin = sprintf("Origin: %s\n\n", $this->origin);
+			}
+		}
+		return $origin;
+	}
+
     /**
      * Handshake with socket.io server
      *
@@ -250,11 +363,25 @@ class Client {
             curl_setopt($ch, CURLOPT_TIMEOUT_MS, $this->handshakeTimeout);
         }
 
+	    if ($this->origin) {
+		    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			    $this->getOrigin()
+		    ));
+	    }
+
+	    if ($this->sendCookie && $this->cookie) {
+		    curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
+	    }
+
         $res = curl_exec($ch);
 
         if ($res === false || $res === '') {
             throw new \Exception(curl_error($ch));
         }
+
+	    if ($res == 'handshake bad origin') {
+		    throw new \Exception('Handshake error: bad origin');
+	    }
 
         $sess = explode(':', $res);
         $this->session['sid'] = $sess[0];
@@ -290,7 +417,10 @@ class Client {
         $out .= "Connection: Upgrade\r\n";
         $out .= "Sec-WebSocket-Key: ".$key."\r\n";
         $out .= "Sec-WebSocket-Version: 13\r\n";
-        $out .= "Origin: *\r\n\r\n";
+	    if ($this->sendCookie && $this->cookie) {
+		    $out .= "Cookie: " . $this->cookie . "\r\n";
+	    }
+	    $out .= $this->getOrigin();
 
         fwrite($this->fd, $out);
 
