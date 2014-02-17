@@ -31,6 +31,8 @@ class Client {
     const TYPE_NOOP         = 8;
 
 	public $origin = '*';
+	public $cookie;
+	public $sendCookie = false;
 
     private $socketIOUrl;
     private $serverHost;
@@ -360,6 +362,10 @@ class Client {
 		    ));
 	    }
 
+	    if ($this->sendCookie && $this->cookie) {
+		    curl_setopt($ch, CURLOPT_COOKIE, $this->cookie);
+	    }
+
         $res = curl_exec($ch);
 
         if ($res === false || $res === '') {
@@ -404,6 +410,9 @@ class Client {
         $out .= "Connection: Upgrade\r\n";
         $out .= "Sec-WebSocket-Key: ".$key."\r\n";
         $out .= "Sec-WebSocket-Version: 13\r\n";
+	    if ($this->sendCookie && $this->cookie) {
+		    $out .= "Cookie: " . $this->cookie . "\r\n";
+	    }
 	    $out .= $this->getOrigin();
 
         fwrite($this->fd, $out);

@@ -9,8 +9,6 @@ namespace ElephantIO;
  * $client->createFrame()->endPoint('/event')->emit('update', array(1,2,3));
  * $client->close();
  *
- * @method string getData
- * @method int getType
  * @method mixed getId
  * @method string getEndPoint
  *
@@ -111,21 +109,31 @@ class Frame {
 		return $this;
 	}
 
-	public function __call($method, $arguments) {
-		if (strpos($method, 'get') === 0) {
-			$property = substr($method, 3);
-			if (property_exists($this, $property)) {
-				return $this->$property;
-			} else if (ctype_upper($property[0])) {
-				$property[0] = strtolower($property[0]);
-				if (property_exists($this, $property)) {
-					return $this->$property;
-				} else if (property_exists($this, '_' . $property)) {
-					return $this->{'_' . $property};
-				}
-			}
-			throw new \RuntimeException('Trying to get undefined property: ' . $property);
-		}
-		throw new \RuntimeException('Call to undefined method: ' . $method);
+	/**
+	 * @return string
+	 */
+	public function getData() {
+		return $this->_data;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getType() {
+		return $this->_type;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getId() {
+		return $this->id;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEndPoint() {
+		return $this->_endPoint;
 	}
 }
