@@ -242,8 +242,10 @@ class Client {
         $ch = curl_init($this->socketIOUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        if (!$this->checkSslPeer)
+        if (!$this->checkSslPeer) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        }
 
         if (!is_null($this->handshakeTimeout)) {
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, $this->handshakeTimeout);
