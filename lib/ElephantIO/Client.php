@@ -22,6 +22,7 @@ class Client {
     const TYPE_ERROR        = 7;
     const TYPE_NOOP         = 8;
 
+    private $auth;
     private $socketIOUrl;
     private $serverHost;
     private $serverPort = 80;
@@ -33,7 +34,8 @@ class Client {
     private $checkSslPeer = true;
     private $debug;
 
-    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
+    public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false, $auth = null) {
+        $this->auth = $auth;
         $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
         $this->read = $read;
         $this->debug = $debug;
@@ -221,7 +223,8 @@ class Client {
      * @return bool
      */
     private function handshake() {
-        $ch = curl_init($this->socketIOUrl);
+        $uri = (null !== $this->auth) ? $this->socketIOUrl . '?' . $this->auth : $this->socketIOUrl;
+        $ch = curl_init($uri);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         if (!$this->checkSslPeer)
