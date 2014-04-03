@@ -82,13 +82,13 @@ class Client {
             $sess = explode(':', $res);
             if ((int)$sess[0] === self::TYPE_EVENT) {
                 unset($sess[0], $sess[1], $sess[2]);
-                
+
                 $response = json_decode(implode(':', $sess), true);
                 $name = $response['name'];
                 $data = $response['args'][0];
-                
+
                 $this->stdout('debug', 'Receive event "' . $name . '" with data "' . $data . '"');
-                
+
                 if (!empty($this->callbacks[$name])) {
                     foreach ($this->callbacks[$name] as $callback) {
                         call_user_func($callback, $data);
@@ -134,7 +134,7 @@ class Client {
 
         return $payload;
     }
-    
+
     /**
      * Attach an event handler function for a given event
      *
@@ -147,19 +147,20 @@ class Client {
         if (!is_callable($callback)) {
             throw new \InvalidArgumentException('ElephantIOClient::on() type callback must be callable.');
         }
-        if (!array_key_exists($event, $this->callbacks)) {
-            $this->callbacks[$event] = array($callback);
-        } else {
-            foreach ($this->callbacks[$event] as $existingCallback) {
-                if ($existingCallback === $callback) {
-                    $this->stdout('debug', 'Skip existing callback');
-                    return;
-                }
-            }
-            $this->callbacks[$event][] = $callback;
+
+        if (!isset($this->callbacks[$event])) {
+            $this->callbacks[$event] = array();
         }
+
+        // @TODO Handle case where callback is a string
+        if (in_array($callback, $this->callbacks[$event])) {
+            $this->stdout('debug', 'Skip existing callback');
+            return;
+        }
+
+        $this->callbacks[$event][] = $callback;
     }
-    
+
     /**
      * Send message to the websocket
      *
