@@ -67,7 +67,7 @@ class Client {
      * @todo work on callbacks
      */
     public function keepAlive() {
-        while(true) {
+        while (is_resource($this->fd)) {
             if ($this->session['heartbeat_timeout'] > 0 && $this->session['heartbeat_timeout']+$this->heartbeatStamp-5 < time()) {
                 $this->send(self::TYPE_HEARTBEAT);
                 $this->heartbeatStamp = time();
@@ -218,7 +218,7 @@ class Client {
      */
     public function close()
     {
-        if ($this->fd) {
+        if (is_resource($this->fd)) {
             $this->send(self::TYPE_DISCONNECT);
             fclose($this->fd);
 
