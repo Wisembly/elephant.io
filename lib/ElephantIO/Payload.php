@@ -159,6 +159,79 @@ class Payload
         return $payload;
     }
 
+    public function decodePayload()
+    {
+        $payload = $this->getPayload();
+
+        $byte1 = ord($payload[0]);
+        $byte2 = ord($payload[1]);
+        // skip reserved
+        $reserved = $byte1 >> 4;
+
+        // get OpCode, Maskable, payloadLength
+        $opcode = $byte1 & 0x0F;
+        $mask = $byte2 >> 7;
+        $payloadLength = $byte2 & 0x7F;
+
+        // get payloadLength, maskkey
+        $payloadDataOffset = 0;
+        $maskPayload = '';
+        if ($mask) {
+            switch ($payloadLength) {
+                case 126:
+                    // from 32bit operation system client
+                    $byte3_4 = substr($payload, 2, 2);
+                    $byte3_4 = unpack('H*', $byte3_4);
+                    $payloadLength = hexdec($byte3_4[1]);
+                    $payloadDataOffset = 4;
+
+                    if ($mask) {
+                        $maskPayload = substr($payload, 4, 4);
+                        $payloadDataOffset += 4;
+                    }
+                    break;
+                case 127:
+                    // from 64bit operation system client
+                    $byte3_6 = substr($payload, 2, 4);
+                    $byte3_6 = unpack('H*', $byte3_6);
+                    $payloadLength = hexdec($byte3_6[1]);
+                    $payloadDataOffset = 6;
+
+                    if ($mask) {
+                        $maskPayload = substr($payload, 6, 4);
+                        $payloadDataOffset += 4;
+                    }
+                    break;
+            }
+            $maskKey = array($maskPayload[0], $maskPayload[1], $maskPayload[2], $maskPayload[3]);
+            $maskKey = array_map('ord', $maskKey);
+        }
+
+        // get decode payload
+        $readBuffer = '';
+        if ($mask) {
+            $maskCount = 0;
+            $readLength = 0;
+            $size = $this->getLength();
+            for ($i = $payloadDataOffset; $i < $size; $i++) {
+                if ($readLength++ < $payloadLength) {
+                    $payload[$i] = chr(ord($payload[$i]) ^ $maskKey[($maskCount++)%4]);
+                }
+                $readBuffer .= $payload[i];
+            }
+        } else {
+            $readBuffer = $payload;
+        }
+
+        // set decode information
+        $this->opcode = $opcode;
+        $this->mask = $mask;
+        $this->maskKey = $maskKey;
+        $this->payload = substr($readBuffer, 0, $payloadLength);
+
+        return $this->payload;
+    }
+
     public function maskData($data, $key) {
         $masked = '';
 
