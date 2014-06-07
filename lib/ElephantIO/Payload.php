@@ -167,68 +167,54 @@ class Payload
     public function decodePayload()
     {
         $payload = $this->getPayload();
-        if (strlen($payload) < 2) return false;
-        
-        $byte1 = ord($payload[0]);
-        $byte2 = ord($payload[1]);
-        // skip reserved
-        $reserved = $byte1 >> 4;
+        $payload = array_map('ord', str_split($payload));
 
-        // get OpCode, Maskable, payloadLength
-        $opcode = $byte1 & 0x0F;
-        $mask = $byte2 >> 7;
-        $payloadLength = $byte2 & 0x7F;
+        $fin    = (($payload[0]) >> 7);
+        $rsv1   = (($payload[0]) >> 6) & 0x1;
+        $rsv2   = (($payload[0]) >> 5) & 0x1;
+        $rsv3   = (($payload[0]) >> 4) & 0x1;
+        $opcode = ($payload[0]) & 0xF;
+        $mask   = (($payload[1]) >> 7);
+        $length = ($payload[1]) & 0x7F;
+        $maskkey = "\x00\x00\x00\x00";
 
-        // get payloadLength, maskkey
-        $payloadDataOffset = 0;
-        $maskPayload = '';
-        if ($mask) {
-			$bit = 0;
-            switch ($payloadLength) {
-                case 126:
-					$bit = 2;
-                    break;
-                case 127:
-					$bit = 4;
-                    break;
-            }
+        if ($length < 3) return false;
 
-			$byte3_4 = substr($payload, 2, $bit);
-			$byte3_4 = unpack('H*', $byte3_4);
-			$payloadLength = hexdec($byte3_4[1]);
-			$payloadDataOffset = $bit+2;
-			if ($mask) {
-				$maskPayload = substr($payload, $bit+2, 4);
-				$payloadDataOffset += 4;
-			}
-
-            $maskKey = array($maskPayload[0], $maskPayload[1], $maskPayload[2], $maskPayload[3]);
-            $maskKey = array_map('ord', $maskKey);
+        $payload = implode('', array_map('chr', $payload));
+        $payloadOffset = 2;
+        switch ($length)
+        {
+            case 126:
+                $payloadOffset = 4;
+                $length = unpack('H*', substr($payload, 2, 2));
+                $length = hexdec($length[1]);
+                break;
+            case 127:
+                $payloadOffset = 6;
+                $length = unpack('H*', substr($payload, 2, 4));
+                $length = hexdec($length[1]);
+                break;
         }
 
-        // get decode payload
-        $readBuffer = '';
-        if ($mask) {
-            $maskCount = 0;
-            $readLength = 0;
-            $size = $this->getLength();
-            for ($i = $payloadDataOffset; $i < $size; $i++) {
-                if ($readLength++ < $payloadLength) {
-                    $payload[$i] = chr(ord($payload[$i]) ^ $maskKey[($maskCount++)%4]);
-                }
-                $readBuffer .= $payload[$i];
-            }
-        } else {
-            $readBuffer = $payload;
+        if ($mask == 1)
+        {
+            $maskkey = substr($payload, $payloadOffset, 4);
+            $this->setMaskKey($maskkey);
+
+            $payloadOffset += 4;
         }
 
-        // set decode information
-        $this->opcode = $opcode;
-        $this->mask = $mask;
-        $this->maskKey = $maskKey;
-        $this->payload = substr($readBuffer, 0, $payloadLength);
+        $data = substr($payload, $payloadOffset, $length);
+        if ($mask == 1) $data = $this->maskData($data, $maskkey);
 
-        return $this->payload;
+        $this->setFin($fin);
+        $this->setRsv1($rsv1);
+        $this->setRsv2($rsv2);
+        $this->setRsv3($rsv3);
+        $this->setOpcode($opcode);
+        $this->setMask($mask);
+
+        return $data;
     }
 
     public function maskData($data, $key) {
