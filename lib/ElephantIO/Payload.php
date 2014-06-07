@@ -126,43 +126,49 @@ class Payload
 
     public function encodePayload()
     {
-        $payload = (($this->getFin()) << 1) | ($this->getRsv1());
-        $payload = (($payload) << 1) | ($this->getRsv2());
-        $payload = (($payload) << 1) | ($this->getRsv3());
-        $payload = (($payload) << 4) | ($this->getOpcode());
-        $payload = (($payload) << 1) | ($this->getMask());
+        $rawMessage = $this->getPayload();
 
-        if ($this->getLength() <= 125) {
-            $payload = (($payload) << 7) | ($this->getLength());
-            $payload = pack('n', $payload);
-        } elseif ($this->getLength() <= 0xffff) {
-            $payload = (($payload) << 7) | 126;
-            $payload = pack('n', $payload).pack('n*', $this->getLength());
-        } else {
-            $payload = (($payload) << 7) | 127;
-            $left = 0xffffffff00000000;
-            $right = 0x00000000ffffffff;
-            $l = ($this->getLength() & $left) >> 32;
-            $r = $this->getLength() & $right;
-            $payload = pack('n', $payload).pack('NN', $l, $r);
+        $opcode = $this->getOpcode();
+        $length = $this->getLength();
+
+        $fin  = $this->getFin();
+        $rsv1 = $this->getRsv1();
+        $rsv2 = $this->getRsv2();
+        $rsv3 = $this->getRsv3();
+        $mask = $this->getMask();
+        $extn = 0x0;
+        if ($length > 125) {
+            $extn = $length;
+            $length = ($length <= 0xFFFF)? 126: 127;
         }
 
-        if ($this->getMask() == 0x1) {
-            $payload .= $this->getMaskKey();
-            $data = $this->maskData($this->getPayload(), $this->getMaskKey());
-        } else {
-            $data = $this->getPayload();
+        $encodeData = (($fin) << 1) | ($rsv1);
+        $encodeData = (($encodeData) << 1) | ($rsv2);
+        $encodeData = (($encodeData) << 1) | ($rsv3);
+        $encodeData = (($encodeData) << 4) | ($opcode);
+        $encodeData = (($encodeData) << 1) | ($mask);
+        $encodeData = (($encodeData) << 7) | ($length);
+        $encodeData = pack('n', $encodeData);
+
+        switch ($length) {
+            case 126: $encodeData .= pack('n*', $extn); break;
+            case 127: $encodeData .= pack('NN', ($extn >> 32), ($extn & 0xFFFFFFFF)); break;
         }
 
-        $payload = $payload.$data;
+        if ($mask == 1) {
+            $maskkey = $this->getMaskKey();
+            $encodeData .= $maskkey;
+            $rawMessage = $this->maskData($rawMessage, $maskkey);
+        }
 
-        return $payload;
+        return $encodeData.$rawMessage;
     }
 
     public function decodePayload()
     {
         $payload = $this->getPayload();
-
+        if (strlen($payload) < 2) return false;
+        
         $byte1 = ord($payload[0]);
         $byte2 = ord($payload[1]);
         // skip reserved
@@ -177,32 +183,25 @@ class Payload
         $payloadDataOffset = 0;
         $maskPayload = '';
         if ($mask) {
+			$bit = 0;
             switch ($payloadLength) {
                 case 126:
-                    // from 32bit operation system client
-                    $byte3_4 = substr($payload, 2, 2);
-                    $byte3_4 = unpack('H*', $byte3_4);
-                    $payloadLength = hexdec($byte3_4[1]);
-                    $payloadDataOffset = 4;
-
-                    if ($mask) {
-                        $maskPayload = substr($payload, 4, 4);
-                        $payloadDataOffset += 4;
-                    }
+					$bit = 2;
                     break;
                 case 127:
-                    // from 64bit operation system client
-                    $byte3_6 = substr($payload, 2, 4);
-                    $byte3_6 = unpack('H*', $byte3_6);
-                    $payloadLength = hexdec($byte3_6[1]);
-                    $payloadDataOffset = 6;
-
-                    if ($mask) {
-                        $maskPayload = substr($payload, 6, 4);
-                        $payloadDataOffset += 4;
-                    }
+					$bit = 4;
                     break;
             }
+
+			$byte3_4 = substr($payload, 2, $bit);
+			$byte3_4 = unpack('H*', $byte3_4);
+			$payloadLength = hexdec($byte3_4[1]);
+			$payloadDataOffset = $bit+2;
+			if ($mask) {
+				$maskPayload = substr($payload, $bit+2, 4);
+				$payloadDataOffset += 4;
+			}
+
             $maskKey = array($maskPayload[0], $maskPayload[1], $maskPayload[2], $maskPayload[3]);
             $maskKey = array_map('ord', $maskKey);
         }
@@ -217,7 +216,7 @@ class Payload
                 if ($readLength++ < $payloadLength) {
                     $payload[$i] = chr(ord($payload[$i]) ^ $maskKey[($maskCount++)%4]);
                 }
-                $readBuffer .= $payload[i];
+                $readBuffer .= $payload[$i];
             }
         } else {
             $readBuffer = $payload;
