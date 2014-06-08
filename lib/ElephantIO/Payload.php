@@ -127,6 +127,7 @@ class Payload
     public function encodePayload()
     {
         $rawMessage = $this->getPayload();
+        if (null !== $rawMessage) return;
 
         $opcode = $this->getOpcode();
         $length = $this->getLength();
@@ -167,6 +168,8 @@ class Payload
     public function decodePayload()
     {
         $payload = $this->getPayload();
+		if (null === $payload) return;
+
         $payload = array_map('ord', str_split($payload));
 
         $fin    = (($payload[0]) >> 7);
@@ -177,6 +180,13 @@ class Payload
         $mask   = (($payload[1]) >> 7);
         $length = ($payload[1]) & 0x7F;
         $maskkey = "\x00\x00\x00\x00";
+
+        $this->setFin($fin);
+        $this->setRsv1($rsv1);
+        $this->setRsv2($rsv2);
+        $this->setRsv3($rsv3);
+        $this->setOpcode($opcode);
+        $this->setMask($mask);
 
         if ($length < 3) return false;
 
@@ -206,13 +216,6 @@ class Payload
 
         $data = substr($payload, $payloadOffset, $length);
         if ($mask == 1) $data = $this->maskData($data, $maskkey);
-
-        $this->setFin($fin);
-        $this->setRsv1($rsv1);
-        $this->setRsv2($rsv2);
-        $this->setRsv3($rsv3);
-        $this->setOpcode($opcode);
-        $this->setMask($mask);
 
         return $data;
     }
