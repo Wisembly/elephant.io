@@ -27,7 +27,7 @@ class Payload
     private $rsv3 = 0x0;
     private $opcode;
     private $mask = 0x0;
-    private $maskKey;
+    private $maskKey = "\x00\x00\x00\x00";
     private $payload;
 
     public function setFin($fin) {
@@ -127,8 +127,6 @@ class Payload
     public function encodePayload()
     {
         $rawMessage = $this->getPayload();
-        if (null !== $rawMessage) return;
-
         $opcode = $this->getOpcode();
         $length = $this->getLength();
 
@@ -138,7 +136,8 @@ class Payload
         $rsv3 = $this->getRsv3();
         $mask = $this->getMask();
         $extn = 0x0;
-        if ($length > 125) {
+        if ($length > 125)
+        {
             $extn = $length;
             $length = ($length <= 0xFFFF)? 126: 127;
         }
@@ -165,12 +164,30 @@ class Payload
         return $encodeData.$rawMessage;
     }
 
-    public function decodePayload()
+    public function getPayloadDecodeLength()
     {
         $payload = $this->getPayload();
-		if (null === $payload) return;
+        if (null === $payload) return;
 
-        $payload = array_map('ord', str_split($payload));
+        $length = (ord($payload[1])) & 0x7F;
+
+        if ($length == 126 || $length == 127)
+        {
+            $length = unpack('H*', substr($payload, 2, (($length == 126)? 2: 4)));
+            $length = hexdec($length[1]);
+        }
+        
+        return $length;
+    }
+
+    public function decodePayload()
+    {
+        $length = $this->getPayloadDecodeLength();
+        // if ($payload !== null) and ($payload packet error)?
+        // invalid websocket packet data or not (text, binary opcode)
+        if (3 > $length) return;
+
+        $payload = array_map('ord', str_split($this->getPayload()));
 
         $fin    = (($payload[0]) >> 7);
         $rsv1   = (($payload[0]) >> 6) & 0x1;
@@ -178,8 +195,8 @@ class Payload
         $rsv3   = (($payload[0]) >> 4) & 0x1;
         $opcode = ($payload[0]) & 0xF;
         $mask   = (($payload[1]) >> 7);
-        $length = ($payload[1]) & 0x7F;
         $maskkey = "\x00\x00\x00\x00";
+        $payloadOffset = 0;
 
         $this->setFin($fin);
         $this->setRsv1($rsv1);
@@ -188,23 +205,12 @@ class Payload
         $this->setOpcode($opcode);
         $this->setMask($mask);
 
-        if ($length < 3) return false;
+        $payloadOffset = 2;
+        if ($length > 125) {
+            $payloadOffset = ($length <= 0xFFFFFFFF && $length > 0xFFFF)? 6: 4;
+        }
 
         $payload = implode('', array_map('chr', $payload));
-        $payloadOffset = 2;
-        switch ($length)
-        {
-            case 126:
-                $payloadOffset = 4;
-                $length = unpack('H*', substr($payload, 2, 2));
-                $length = hexdec($length[1]);
-                break;
-            case 127:
-                $payloadOffset = 6;
-                $length = unpack('H*', substr($payload, 2, 4));
-                $length = hexdec($length[1]);
-                break;
-        }
 
         if ($mask == 1)
         {
