@@ -119,15 +119,15 @@ class Client {
      * // https://tools.ietf.org/html/rfc6455#section-5.2
      */
     public function read() {
-		// payload header length is
-		//   min : 2byte.
-		//   max :10byte.
-		$payload_length_bytes = fread($this->fd, 10);
+        // payload header length is
+        //   min : 2byte.
+        //   max :10byte.
+        $payload_length_bytes = fread($this->fd, 10);
         $payload_data = $payload_length_bytes;
 
-		$payload = new Payload();
-		$payload->setPayload($payload_length_bytes);
-		$payload_len = $payload->getPayloadDecodeLength();
+        $payload = new Payload();
+        $payload->setPayload($payload_length_bytes);
+        $payload_len = $payload->getPayloadDecodeLength();
 
         // Use buffering to handle packet size > 16Kb
         $read = 0;
@@ -136,9 +136,9 @@ class Client {
             $payload_data .= $buff;
         }
 
-		// decode payload
-		$payload->setPayload($payload_data);
-		$payload_data = $payload->decodePayload();
+        // decode payload
+        $payload->setPayload($payload_data);
+        $payload_data = $payload->decodePayload();
 
         $this->stdout('debug', 'Received ' . $payload);
 
