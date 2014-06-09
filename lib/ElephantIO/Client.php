@@ -2,9 +2,6 @@
 
 namespace ElephantIO;
 
-require_once(__DIR__.'/Payload.php');
-
-
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
@@ -309,9 +306,21 @@ class Client {
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         }
 
-        if (!is_null($this->handshakeTimeout)) {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, $this->handshakeTimeout);
-            curl_setopt($ch, CURLOPT_TIMEOUT_MS, $this->handshakeTimeout);
+        if (null !== $this->handshakeTimeout) {
+            $timeout   = $this->handshakeTimeout;
+            $constants = array(CURLOPT_CONNECTTIMEOUT_MS, CURLOPT_TIMEOUT_MS);
+
+            $version = curl_version();
+            $version = $version['version'];
+
+            // CURLOPT_CONNECTTIMEOUT_MS and CURLOPT_TIMEOUT_MS were only implemented on curl 7.16.2
+            if (version_compare($version, '7.16.2') > -1) {
+                $timeout  *= 1000;
+                $constants = array(CURLOPT_CONNECTTIMEOUT, CURLOPT_TIMEOUT);
+            }
+
+            curl_setopt($ch, $constants[0], $timeout);
+            curl_setopt($ch, $constants[1], $timeout);
         }
 
         $res = curl_exec($ch);
