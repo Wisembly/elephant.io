@@ -314,7 +314,7 @@ class Client {
             $version = $version['version'];
 
             // CURLOPT_CONNECTTIMEOUT_MS and CURLOPT_TIMEOUT_MS were only implemented on curl 7.16.2
-            if (version_compare($version, '7.16.2') === 1) {
+            if (true === version_compare($version, '7.16.2', '<')) {
                 $timeout  /= 1000;
                 $constants = array(CURLOPT_CONNECTTIMEOUT, CURLOPT_TIMEOUT);
             }
