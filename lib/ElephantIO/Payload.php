@@ -246,7 +246,7 @@ class Payload
     {
         $masked = '';
 
-		$length = strlen($data);
+        $length = strlen($data);
         for ($i = 0; $i < $length; $i++) {
             $masked .= $data[$i] ^ $key[$i % 4];
         }
