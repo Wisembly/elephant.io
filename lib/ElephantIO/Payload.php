@@ -30,57 +30,68 @@ class Payload
     private $maskKey = "\x00\x00\x00\x00";
     private $payload;
 
-    public function setFin($fin) {
+    public function setFin($fin)
+    {
         $this->fin = $fin;
 
         return $this;
     }
 
-    public function getFin() {
+    public function getFin()
+    {
         return $this->fin;
     }
 
-    public function setRsv1($rsv1) {
+    public function setRsv1($rsv1)
+    {
         $this->rsv1 = $rsv1;
 
         return $this;
     }
 
-    public function getRsv1() {
+    public function getRsv1()
+    {
         return $this->rsv1;
     }
 
-    public function setRsv2($rsv2) {
+    public function setRsv2($rsv2)
+    {
         $this->rsv2 = $rsv2;
 
         return $this;
     }
 
-    public function getRsv2() {
+    public function getRsv2()
+    {
         return $this->rsv2;
     }
 
-    public function setRsv3($rsv3) {
+    public function setRsv3($rsv3)
+    {
         $this->rsv3 = $rsv3;
 
         return $this;
     }
 
-    public function getRsv3() {
+    public function getRsv3()
+    {
         return $this->rsv3;
     }
 
-    public function setOpcode($opcode) {
+    public function setOpcode($opcode)
+    {
         $this->opcode = $opcode;
 
         return $this;
     }
 
-    public function getOpcode() {
+    public function getOpcode()
+    {
         return $this->opcode;
     }
 
-    public function setMask($mask) {
+    public function setMask($mask)
+    {
         $this->mask = $mask;
 
         if ($this->mask == true) {
@@ -90,41 +101,49 @@ class Payload
         return $this;
     }
 
-    public function getMask() {
+    public function getMask()
+    {
         return $this->mask;
     }
 
-    public function getLength() {
+    public function getLength()
+    {
         return strlen($this->getPayload());
     }
 
-    public function setMaskKey($maskKey) {
+    public function setMaskKey($maskKey)
+    {
         $this->maskKey = $maskKey;
 
         return $this;
     }
 
-    public function getMaskKey() {
+    public function getMaskKey()
+    {
         return $this->maskKey;
     }
 
-    public function setPayload($payload) {
+    public function setPayload($payload)
+    {
         $this->payload = $payload;
 
         return $this;
     }
 
-    public function getPayload() {
+    public function getPayload()
+    {
         return $this->payload;
     }
 
-    public function generateMaskKey() {
+    public function generateMaskKey()
+    {
         $this->setMaskKey($key = openssl_random_pseudo_bytes(4));
 
         return $key;
     }
 
-    public function encodePayload() {
+    public function encodePayload()
+    {
         $rawMessage = $this->getPayload();
         $opcode = $this->getOpcode();
         $length = $this->getLength();
@@ -162,7 +181,8 @@ class Payload
         return $encodeData.$rawMessage;
     }
 
-    public function getPayloadDecodeLength() {
+    public function getPayloadDecodeLength()
+    {
         $payload = $this->getPayload();
         if (null === $payload) return;
 
@@ -176,12 +196,14 @@ class Payload
         return $length;
     }
 
-    public function decodePayload() {
+    public function decodePayload()
+    {
         $length = $this->getPayloadDecodeLength();
         // if ($payload !== null) and ($payload packet error)?
         // invalid websocket packet data or not (text, binary opcode)
         if (3 > $length) return;
 
+        // php 5.x : notice: Array to string conversion
         $payload = array_map('ord', str_split($this->getPayload()));
 
         $fin    = (($payload[0]) >> 7);
@@ -220,10 +242,12 @@ class Payload
         return $data;
     }
 
-    public function maskData($data, $key) {
+    public function maskData($data, $key)
+    {
         $masked = '';
 
-        for ($i = 0; $i < strlen($data); $i++) {
+		$length = strlen($data);
+        for ($i = 0; $i < $length; $i++) {
             $masked .= $data[$i] ^ $key[$i % 4];
         }
 
