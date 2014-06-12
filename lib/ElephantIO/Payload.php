@@ -124,8 +124,7 @@ class Payload
         return $key;
     }
 
-    public function encodePayload()
-    {
+    public function encodePayload() {
         $rawMessage = $this->getPayload();
         $opcode = $this->getOpcode();
         $length = $this->getLength();
@@ -136,8 +135,7 @@ class Payload
         $rsv3 = $this->getRsv3();
         $mask = $this->getMask();
         $extn = 0x0;
-        if ($length > 125)
-        {
+        if ($length > 125) {
             $extn = $length;
             $length = ($length <= 0xFFFF)? 126: 127;
         }
@@ -164,15 +162,13 @@ class Payload
         return $encodeData.$rawMessage;
     }
 
-    public function getPayloadDecodeLength()
-    {
+    public function getPayloadDecodeLength() {
         $payload = $this->getPayload();
         if (null === $payload) return;
 
         $length = (ord($payload[1])) & 0x7F;
 
-        if ($length == 126 || $length == 127)
-        {
+        if ($length == 126 || $length == 127) {
             $length = unpack('H*', substr($payload, 2, (($length == 126)? 2: 4)));
             $length = hexdec($length[1]);
         }
@@ -180,8 +176,7 @@ class Payload
         return $length;
     }
 
-    public function decodePayload()
-    {
+    public function decodePayload() {
         $length = $this->getPayloadDecodeLength();
         // if ($payload !== null) and ($payload packet error)?
         // invalid websocket packet data or not (text, binary opcode)
@@ -212,8 +207,7 @@ class Payload
 
         $payload = implode('', array_map('chr', $payload));
 
-        if ($mask == 1)
-        {
+        if ($mask == 1) {
             $maskkey = substr($payload, $payloadOffset, 4);
             $this->setMaskKey($maskkey);
 
