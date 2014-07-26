@@ -194,6 +194,15 @@ class Client {
                 ->setPayload($raw_message);
         $encoded = $payload->encodePayload();
         fwrite($this->fd, $encoded);
+
+        if ($this->read) {
+            if ($this->read() != '1::') {
+                throw new \Exception('Socket.io did not send connect response. Aborting...');
+            } else {
+                $this->stdout('info', 'Server report us as connected !');
+            }
+        } 
+
         $this->stdout('debug', 'Sent '.$raw_message);
         return $this;
     }
@@ -371,16 +380,6 @@ class Client {
             if ($res === '') break;
         }
         $this->send(5);
-        //$rs = $this->read();
-       
-        if ($this->read) {
-            if ($this->read() != '1::') {
-                throw new \Exception('Socket.io did not send connect response. Aborting...');
-            } else {
-                $this->stdout('info', 'Server report us as connected !');
-            }
-        } 
-        //$this->send(self::TYPE_CONNECT);
         $this->heartbeatStamp = time();
     }
 
