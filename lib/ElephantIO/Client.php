@@ -2,6 +2,7 @@
 
 namespace ElephantIO;
 
+require(__DIR__."/Payload.php");
 /**
  * ElephantIOClient is a rough implementation of socket.io protocol.
  * It should ease you dealing with a socket.io server.
@@ -34,7 +35,7 @@ class Client {
     private $handshakeQuery = '';
 
     public function __construct($socketIOUrl, $socketIOPath = 'socket.io', $protocol = 1, $read = true, $checkSslPeer = true, $debug = false) {
-        $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/'.(string)$protocol;
+        $this->socketIOUrl = $socketIOUrl.'/'.$socketIOPath.'/?transport=polling&b64=1'; //.(string)$protocol;
         $this->read = $read;
         $this->debug = $debug;
         $this->parseUrl();
@@ -177,29 +178,23 @@ class Client {
      * @access public
      * @param int $type
      * @param int $id
-     * @param int $endpoint
+     * @param int $endpoint - Not used anymore
      * @param string $message
      * @return ElephantIO\Client
      */
-    public function send($type, $id = null, $endpoint = null, $message = null) {
+    public function send($type, $id = 2, $endpoint = null, $message = null) {
         if (!is_int($type) || $type > 8) {
             throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
         }
-
-        $raw_message = $type.':'.$id.':'.$endpoint.':'.$message;
+        $raw_message = $type.$id.$message;
+        
         $payload = new Payload();
         $payload->setOpcode(Payload::OPCODE_TEXT)
-            ->setMask(true)
-            ->setPayload($raw_message);
+                ->setMask(true)
+                ->setPayload($raw_message);
         $encoded = $payload->encodePayload();
-
         fwrite($this->fd, $encoded);
-
-        // wait 100ms before closing connexion
-        usleep(100*1000);
-
         $this->stdout('debug', 'Sent '.$raw_message);
-
         return $this;
     }
 
@@ -214,11 +209,7 @@ class Client {
      * @todo work on callbacks
      */
     public function emit($event, $args, $endpoint = null, $callback = null) {
-        return $this->send(self::TYPE_EVENT, null, $endpoint, json_encode(array(
-            'name' => $event,
-            'args' => $args,
-            )
-        ));
+        return $this->send(4, 2, $endpoint, '["'.$event.'",'.json_encode($args).']');
     }
 
     /**
@@ -324,16 +315,17 @@ class Client {
         }
 
         $res = curl_exec($ch);
-
         if ($res === false || $res === '') {
             throw new \Exception(curl_error($ch));
         }
 
-        $sess = explode(':', $res);
-        $this->session['sid'] = $sess[0];
-        $this->session['heartbeat_timeout'] = $sess[1];
-        $this->session['connection_timeout'] = $sess[2];
-        $this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
+        curl_close($ch);
+
+        $sess = json_decode(substr($res, strpos($res,"{"), strrpos($res,"}")));
+        $this->session['sid'] = $sess->sid;
+        $this->session['heartbeat_timeout']    = $sess->pingInterval;
+        $this->session['connection_timeout']   = $sess->pingTimeout;
+        $this->session['supported_transports'] = array_flip($sess->upgrades);
 
         if (!isset($this->session['supported_transports']['websocket'])) {
             throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
@@ -356,17 +348,14 @@ class Client {
         }
 
         $key = $this->generateKey();
-
-        $out  = "GET ".$this->serverPath."/websocket/".$this->session['sid']." HTTP/1.1\r\n";
+        $out  = "GET ".$this->serverPath."?transport=websocket&sid=".$this->session['sid']." HTTP/1.1\r\n";
         $out .= "Host: ".$this->serverHost."\r\n";
         $out .= "Upgrade: WebSocket\r\n";
         $out .= "Connection: Upgrade\r\n";
         $out .= "Sec-WebSocket-Key: ".$key."\r\n";
         $out .= "Sec-WebSocket-Version: 13\r\n";
         $out .= "Origin: *\r\n\r\n";
-
         fwrite($this->fd, $out);
-
         $res = fgets($this->fd);
 
         if ($res === false) {
@@ -381,16 +370,17 @@ class Client {
             $res = trim(fgets($this->fd));
             if ($res === '') break;
         }
-
+        $this->send(5);
+        //$rs = $this->read();
+       
         if ($this->read) {
             if ($this->read() != '1::') {
                 throw new \Exception('Socket.io did not send connect response. Aborting...');
             } else {
                 $this->stdout('info', 'Server report us as connected !');
             }
-        }
-
-//        $this->send(self::TYPE_CONNECT);
+        } 
+        //$this->send(self::TYPE_CONNECT);
         $this->heartbeatStamp = time();
     }
 
@@ -402,7 +392,6 @@ class Client {
      */
     private function parseUrl() {
         $url = parse_url($this->socketIOUrl);
-
         $this->serverPath = $url['path'];
         $this->serverHost = $url['host'];
         $this->serverPort = isset($url['port']) ? $url['port'] : null;
