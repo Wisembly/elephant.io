@@ -10,15 +10,23 @@ require(__DIR__."/Payload.php");
  * @author Ludovic Barreca <ludovic@balloonup.com>
  */
 class Client {
-    const TYPE_DISCONNECT   = 0;
-    const TYPE_CONNECT      = 1;
-    const TYPE_HEARTBEAT    = 2;
-    const TYPE_MESSAGE      = 3;
-    const TYPE_JSON_MESSAGE = 4;
-    const TYPE_EVENT        = 5;
-    const TYPE_ACK          = 6;
-    const TYPE_ERROR        = 7;
-    const TYPE_NOOP         = 8;
+    // Engine IO message types
+    const EIO_OPEN    = 0;
+    const EIO_CLOSE   = 1;
+    const EIO_PING    = 2;
+    const EIO_PONG    = 3;
+    const EIO_MESSAGE = 4;
+    const EIO_UPGRADE = 5;
+    const EIO_NOOP    = 6;
+    
+    // Socket IO message types
+    const SIO_CONNECT      = 0;
+    const SIO_DISCONNECT   = 1;
+    const SIO_EVENT        = 2;
+    const SIO_ACK          = 3;
+    const SIO_ERROR        = 4;
+    const SIO_BINARY_EVENT = 5;
+    const SIO_BINARY_ACK   = 6;
 
     private $socketIOUrl;
     private $serverHost;
@@ -50,7 +58,6 @@ class Client {
      */
     public function setHandshakeQuery(array $query) {
         $this->handshakeQuery = '?' . http_build_query($query);
-
         return $this;
     }
 
@@ -80,7 +87,7 @@ class Client {
     public function keepAlive() {
         while (is_resource($this->fd)) {
             if ($this->session['heartbeat_timeout'] > 0 && $this->session['heartbeat_timeout']+$this->heartbeatStamp-5 < time()) {
-                $this->send(self::TYPE_HEARTBEAT);
+                $this->send(self::EIO_PING);
                 $this->heartbeatStamp = time();
             }
 
@@ -91,7 +98,7 @@ class Client {
 
             $res = $this->read();
             $sess = explode(':', $res);
-            if ((int)$sess[0] === self::TYPE_EVENT) {
+            if ((int)$sess[0] === self::EIO_MESSAGE) {
                 unset($sess[0], $sess[1], $sess[2]);
 
                 $response = json_decode(implode(':', $sess), true);
@@ -176,17 +183,17 @@ class Client {
      * Send message to the websocket
      *
      * @access public
-     * @param int $type
-     * @param int $id
-     * @param int $endpoint - Not used anymore
+     * @param int $eioCode
+     * @param int $sioCode
+     * @param int $endpoint
      * @param string $message
      * @return ElephantIO\Client
      */
-    public function send($type, $id = 2, $endpoint = null, $message = null) {
-        if (!is_int($type) || $type > 8) {
+    public function send($eioCode, $sioCode = self::SIO_EVENT, $endpoint = null, $message = null) {
+        if (!is_int($eioCode) || $eioCode > 8) {
             throw new \InvalidArgumentException('ElephantIOClient::send() type parameter must be an integer strictly inferior to 9.');
         }
-        $raw_message = $type.$id.$message;
+        $raw_message = $eioCode.$sioCode.$message;
         
         $payload = new Payload();
         $payload->setOpcode(Payload::OPCODE_TEXT)
@@ -218,7 +225,7 @@ class Client {
      * @todo work on callbacks
      */
     public function emit($event, $args, $endpoint = null, $callback = null) {
-        return $this->send(4, 2, $endpoint, '["'.$event.'",'.json_encode($args).']');
+        return $this->send(self::EIO_MESSAGE, self::SIO_EVENT, $endpoint, '["'.$event.'",'.json_encode($args).']');
     }
 
     /**
@@ -229,7 +236,7 @@ class Client {
     public function close()
     {
         if (is_resource($this->fd)) {
-            $this->send(self::TYPE_DISCONNECT);
+            $this->send(self::EIO_CLOSE);
             fclose($this->fd);
 
             return true;
@@ -331,7 +338,7 @@ class Client {
         curl_close($ch);
 
         $sess = json_decode(substr($res, strpos($res,"{"), strrpos($res,"}")));
-        $this->session['sid'] = $sess->sid;
+        $this->session['sid']                  = $sess->sid;
         $this->session['heartbeat_timeout']    = $sess->pingInterval;
         $this->session['connection_timeout']   = $sess->pingTimeout;
         $this->session['supported_transports'] = array_flip($sess->upgrades);
@@ -379,7 +386,7 @@ class Client {
             $res = trim(fgets($this->fd));
             if ($res === '') break;
         }
-        $this->send(5);
+        $this->send(self::EIO_UPGRADE);
         $this->heartbeatStamp = time();
     }
 
