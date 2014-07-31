@@ -1,0 +1,51 @@
+{
+    "name": "wisembly/elephant.io",
+    "type": "library",
+    "description": "Send events to a websocket real time engine though PHP",
+    "keywords": ["Nodejs", "WebSocket", "Dialog", "Real Time"],
+    "license": "MIT",
+    "homepage": "http://elephant.io",
+
+    "authors": [
+        {
+            "name": "Baptiste Clavié",
+            "email": "baptiste@wisembly.com",
+            "homepage": "http://baptiste.xn--clavi-fsa.net/",
+            "role": "Maintainer"
+        },
+
+        {
+            "name": "Guillaume Potier",
+            "email": "guillaume@wisembly.com",
+            "role": "Maintainer"
+        },
+
+        {
+            "name": "Ludovic Barreca",
+            "email": "ludogp2@gmail.com",
+            "role": "Project Founder"
+        }
+    ],
+
+    "require": {
+        "php": ">=5.4.0",
+        "guzzlehttp/guzzle": "~4.0"
+    },
+
+    "require-dev": {
+        "phpunit/phpunit": "~4.0"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "ElephantIO\\": ["src/", "test/"]
+        }
+    },
+
+    "config": {
+        "bin-dir": "bin"
+    },
+
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
