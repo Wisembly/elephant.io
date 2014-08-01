@@ -15,6 +15,10 @@ namespace ElephantIO;
  * Represents an engine used within ElephantIO to send / receive messages from
  * a websocket real time server
  *
+ * Loosely based on the work of the following :
+ *   - Ludovic Barreca (@ludovicbarreca)
+ *   - Mathieu Lallemand (@lalmat)
+ *
  * @author Baptiste Clavié <baptiste@wisembly.com>
  */
 interface EngineInterface

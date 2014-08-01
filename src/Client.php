@@ -17,8 +17,6 @@ use Psr\Log\LoggerInterface;
  * Represents the IO Client which will send and receive the requests to the
  * websocket server
  *
- * Loosely based on the work of Ludovic Barreca
- *
  * @author Baptiste Clavié <baptiste@wisembly.com>
  */
 class Client
@@ -49,20 +47,36 @@ class Client
      */
     public function initialize($keepAlive = false)
     {
-    }
+        null !== $this->logger && $this->logger->info('Connecting to the websocket');
+        $this->engine->connect();
 
-    /** Reads a message from the socket */
-    public function read()
-    {
+        if (true === $keepAlive) {
+            null !== $this->logger && $this->logger->info('Keeping alive the connection to the websocket');
+            $this->engine->keepAlive();
+        }
+
+        return $this;
     }
 
     /**
-     * Sends a message through the websocket
+     * Reads a message from the socket
+     *
+     * @return MessageInterface Message read from the socket
+     */
+    public function read()
+    {
+        null !== $this->logger && $this->logger->info('Reading a new message from the socket');
+        return $this->engine->read();
+    }
+
+    /**
+     * Sends a message through the websocket (parameters to determine)
      *
      * @return $this
      */
     public function send()
     {
+        return $this;
     }
 
     /**
@@ -72,6 +86,10 @@ class Client
      */
     public function close()
     {
+        null !== $this->logger && $this->logger->info('Closing the connection to the websocket');
+        $this->engine->close();
+
+        return $this;
     }
 }
 
