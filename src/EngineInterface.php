@@ -19,6 +19,14 @@ namespace ElephantIO;
  */
 interface EngineInterface
 {
+    const OPEN    = 0;
+    const CLOSE   = 1;
+    const PING    = 2;
+    const PONG    = 3;
+    const MESSAGE = 4;
+    const UPGRADE = 5;
+    const NOOP    = 6;
+
     /** Connect to the targeted server */
     public function connect();
 
