@@ -25,10 +25,10 @@ interface EngineInterface
     /** Closes the connection to the websocket */
     public function close();
 
-    /** Read from the socket */
+    /** Read data from the socket */
     public function read();
 
-    /** Sends a message to the websocket */
+    /** Sends data through the websocket */
     public function send();
 
     /** Keeps alive the connection */
