@@ -18,31 +18,34 @@ namespace ElephantIO;
  *   - Ludovic Barreca (@ludovicbarreca)
  *   - Byeoung Wook (@kbu1564)
  *
+ * @link https://tools.ietf.org/html/rfc6455#section-5.2
  * @author Baptiste Clavié <baptiste@wisembly.com>
  */
 abstract class AbstractPayload
 {
-    const OPCODE_CONTINUE               = 0x0;
-    const OPCODE_TEXT                   = 0x1;
-    const OPCODE_BINARY                 = 0x2;
     const OPCODE_NON_CONTROL_RESERVED_1 = 0x3;
     const OPCODE_NON_CONTROL_RESERVED_2 = 0x4;
     const OPCODE_NON_CONTROL_RESERVED_3 = 0x5;
     const OPCODE_NON_CONTROL_RESERVED_4 = 0x6;
     const OPCODE_NON_CONTROL_RESERVED_5 = 0x7;
-    const OPCODE_CLOSE                  = 0x8;
-    const OPCODE_PING                   = 0x9;
-    const OPCODE_PONG                   = 0xA;
-    const OPCODE_CONTROL_RESERVED_1     = 0xB;
-    const OPCODE_CONTROL_RESERVED_2     = 0xC;
-    const OPCODE_CONTROL_RESERVED_3     = 0xD;
-    const OPCODE_CONTROL_RESERVED_4     = 0xE;
-    const OPCODE_CONTROL_RESERVED_5     = 0xF;
 
-    protected $fin = 0x1;
-    protected $rsv = [0x0, 0x0, 0x0];
+    const OPCODE_CONTINUE = 0x0;
+    const OPCODE_TEXT     = 0x1;
+    const OPCODE_BINARY   = 0x2;
+    const OPCODE_CLOSE    = 0x8;
+    const OPCODE_PING     = 0x9;
+    const OPCODE_PONG     = 0xA;
 
-    protected $mask    = 0x0;
+    const OPCODE_CONTROL_RESERVED_1 = 0xB;
+    const OPCODE_CONTROL_RESERVED_2 = 0xC;
+    const OPCODE_CONTROL_RESERVED_3 = 0xD;
+    const OPCODE_CONTROL_RESERVED_4 = 0xE;
+    const OPCODE_CONTROL_RESERVED_5 = 0xF;
+
+    protected $fin = 0b1; // only one frame is necessary
+    protected $rsv = [0b0, 0b0, 0b0]; // rsv1, rsv2, rsv3
+
+    protected $mask    = false;
     protected $maskKey = "\x00\x00\x00\x00";
 
     protected $opCode;

@@ -30,15 +30,17 @@ class Encoder extends AbstractPayload
     /**
      * @param string  $data   data to encode
      * @param integer $opcode OpCode to use (one of AbstractPayload's constant)
-     * @param integer $mask   Mask to use
+     * @param bool    $mask   Should we use a mask ?
      */
-    public function __construct($data, $opCode, $mask = 0x1)
+    public function __construct($data, $opCode, $mask)
     {
         $this->data    = $data;
         $this->opCode  = $opCode;
+        $this->mask    = (bool) $mask;
 
-        $this->mask    = $mask;
-        $this->maskKey = openssl_random_pseudo_bytes(4);
+        if (true === $this->mask) {
+            $this->maskKey = openssl_random_pseudo_bytes(4);
+        }
     }
 
     public function encode()

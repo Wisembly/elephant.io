@@ -50,12 +50,12 @@ class Decoder extends AbstractPayload implements Countable
 
         $this->fin = ($payload[0] >> 0b111);
 
-        $this->rsv = [($payload[0] >> 0b110) & 0x1,
-                      ($payload[0] >> 0b101) & 0x1,
-                      ($payload[0] >> 0b100) & 0x1];
+        $this->rsv = [($payload[0] >> 0b110) & 0b1,  // rsv1
+                      ($payload[0] >> 0b101) & 0b1,  // rsv2
+                      ($payload[0] >> 0b100) & 0b1]; // rsv3
 
         $this->opCode = $payload[0] & 0xF;
-        $this->mask   = $payload[1] >> 0b111;
+        $this->mask   = (bool) $payload[1] >> 0b111;
 
         $payloadOffset = 2;
 
@@ -65,14 +65,14 @@ class Decoder extends AbstractPayload implements Countable
 
         $payload = implode('', array_map('chr', $payload));
 
-        if (0x1 === $this->mask) {
+        if (true === $this->mask) {
             $this->maskKey  = substr($payload, $payloadOffset, 4);
             $payloadOffset += 4;
         }
 
         $data = substr($payload, $payloadOffset, $length);
 
-        if (0x1 === $this->mask) {
+        if (true === $this->mask) {
             $data = $this->maskData($data);
         }
 
