@@ -53,7 +53,7 @@ class Encoder extends AbstractPayload
         $length = strlen($this->data);
 
         if (0xFFFF < $length) {
-            $pack   = pack('NN', ($length & 0xFFFFFFFF00000000) >> 0b1000000, $length & 0x00000000FFFFFFFF);
+            $pack   = pack('NN', ($length & 0xFFFFFFFF00000000) >> 0b100000, $length & 0x00000000FFFFFFFF);
             $length = 0x007F;
         } elseif (0x007D < $length) {
             $pack   = pack('n*', $length);
