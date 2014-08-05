@@ -55,7 +55,7 @@ class Decoder extends AbstractPayload implements Countable
                       ($payload[0] >> 0b100) & 0b1]; // rsv3
 
         $this->opCode = $payload[0] & 0xF;
-        $this->mask   = (bool) $payload[1] >> 0b111;
+        $this->mask   = (bool) ($payload[1] >> 0b111);
 
         $payloadOffset = 2;
 
