@@ -329,14 +329,18 @@ class Client {
             throw new \Exception(curl_error($ch));
         }
 
-        $sess = explode(':', $res);
-        $this->session['sid'] = $sess[0];
-        $this->session['heartbeat_timeout'] = $sess[1];
-        $this->session['connection_timeout'] = $sess[2];
-        $this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
+        $sess = explode(':', $res, 4);
+        if (count($sess) === 4) {
+            $this->session['sid'] = $sess[0];
+            $this->session['heartbeat_timeout'] = $sess[1];
+            $this->session['connection_timeout'] = $sess[2];
+            $this->session['supported_transports'] = array_flip(explode(',', $sess[3]));
 
-        if (!isset($this->session['supported_transports']['websocket'])) {
-            throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
+            if (!isset($this->session['supported_transports']['websocket'])) {
+                throw new \Exception('This socket.io server do not support websocket protocol. Terminating connection...');
+            }
+        } else {
+            return false;
         }
 
         return true;
