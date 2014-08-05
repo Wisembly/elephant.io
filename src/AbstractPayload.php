@@ -59,7 +59,7 @@ abstract class AbstractPayload
     protected function maskData($data)
     {
         $masked = '';
-        $data   = preg_split('`(?<!^)(?!$)`u', $data);
+        $data   = str_split($data);
 
         foreach ($data as $i => $letter) {
             $masked .= $letter ^ $this->maskKey[$i % 4];
