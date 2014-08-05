@@ -60,9 +60,10 @@ abstract class AbstractPayload
     {
         $masked = '';
         $data   = str_split($data);
+        $key    = str_split($this->maskKey);
 
         foreach ($data as $i => $letter) {
-            $masked .= $letter ^ $this->maskKey[$i % 4];
+            $masked .= $letter ^ $key[$i % 4];
         }
 
         return $masked;

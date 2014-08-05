@@ -52,14 +52,12 @@ class Encoder extends AbstractPayload
         $pack   = '';
         $length = strlen($this->data);
 
-        if (0x007D < $length) {
-            if (0xFFFF > $length) {
-                $pack   = pack('NN', ($length & 0xFFFFFFFF00000000) >> 0b1000000, $length & 0x00000000FFFFFFFF);
-                $length = 0x007F;
-            } else {
-                $pack   = pack('n*', $length);
-                $length = 0x007E;
-            }
+        if (0xFFFF < $length) {
+            $pack   = pack('NN', ($length & 0xFFFFFFFF00000000) >> 0b1000000, $length & 0x00000000FFFFFFFF);
+            $length = 0x007F;
+        } elseif (0x007D < $length) {
+            $pack   = pack('n*', $length);
+            $length = 0x007E;
         }
 
         $payload = ($this->fin << 0b001) | $this->rsv[0];
@@ -72,7 +70,7 @@ class Encoder extends AbstractPayload
         $data    = $this->data;
         $payload = pack('n', $payload) . $pack;
 
-        if (0x1 === $this->mask) {
+        if (true === $this->mask) {
             $payload .= $this->maskKey;
             $data     = $this->maskData($data);
         }
