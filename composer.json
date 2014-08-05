@@ -24,12 +24,18 @@
             "name": "Ludovic Barreca",
             "email": "ludogp2@gmail.com",
             "role": "Project Founder"
+        },
+
+        {
+            "name": "Elephant.IO Community",
+            "role": "Contributors :)"
         }
     ],
 
     "require": {
         "php": ">=5.4.0",
-        "guzzlehttp/guzzle": "~4.0"
+        "guzzlehttp/guzzle": "~4.0",
+        "psr/log": "~1.0"
     },
 
     "require-dev": {
