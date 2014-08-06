@@ -81,10 +81,9 @@ abstract class SocketIO implements EngineInterface
      */
     protected function getServerInformation()
     {
-        $server = array_replace($this->url, ['scheme'    => 'http',
-                                             'host'      => 'localhost',
-                                             'path'      => 'socket.io',
-                                             'transport' => static::TRANSPORT_POLLING]);
+        $server = array_replace($this->url, ['scheme' => 'http',
+                                             'host'   => 'localhost',
+                                             'path'   => 'socket.io']);
 
         if (!isset($server['port'])) {
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
@@ -93,6 +92,8 @@ abstract class SocketIO implements EngineInterface
         if ('https' === $server['scheme']) {
             $server['scheme'] = 'ssl';
         }
+
+        $server['transport'] = $this->transport ?: static::TRANSPORT_POLLING;
 
         return $server;
     }
