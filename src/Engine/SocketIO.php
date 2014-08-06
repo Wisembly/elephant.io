@@ -79,7 +79,7 @@ abstract class SocketIO implements EngineInterface
      *
      * @return string[] information on the given URL
      */
-    protected function getServerInformations()
+    protected function getServerInformation()
     {
         $server = array_replace($this->url, ['scheme'    => 'http',
                                              'host'      => 'localhost',
