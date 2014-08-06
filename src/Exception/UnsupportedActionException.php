@@ -13,11 +13,14 @@ namespace ElephantIO\Exception;
 
 use BadMethodCallException;
 
+use ElephantIO\EngineInterface;
+
+
 class UnsupportedActionException extends BadMethodCallException
 {
-    public function __construct($message = null, Exception $previous = null)
+    public function __construct(EngineInterface $engine, $action, Exception $previous = null)
     {
-        parent::__construct($message ?: 'This action is not supported by this engine', 0, $previous);
+        parent::__construct(sprintf('The action "%s" is not supported by the engine "%s"', $engine->getName(), $action), 0, $previous);
     }
 }
 

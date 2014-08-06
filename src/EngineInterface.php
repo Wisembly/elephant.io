@@ -45,5 +45,8 @@ interface EngineInterface
 
     /** Keeps alive the connection */
     public function keepAlive();
+
+    /** Gets the name of the engine */
+    public function getName();
 }
 

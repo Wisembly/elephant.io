@@ -39,33 +39,39 @@ abstract class SocketIO implements EngineInterface
     protected $sessions;
 
     /** {@inheritDoc} */
-    public function read()
+    public function connect()
     {
-        throw new UnsupportedActionException;
+        throw new UnsupportedActionException($this, 'connect');
     }
 
     /** {@inheritDoc} */
     public function keepAlive()
     {
-        throw new UnsupportedActionException;
-    }
-
-    /** {@inheritDoc} */
-    public function connect()
-    {
-        throw new UnsupportedActionException;
+        throw new UnsupportedActionException($this, 'keepAlive');
     }
 
     /** {@inheritDoc} */
     public function close()
     {
-        throw new UnsupportedActionException;
+        throw new UnsupportedActionException($this, 'close');
     }
 
     /** {@inheritDoc} */
     public function send()
     {
-        throw new UnsupportedActionException;
+        throw new UnsupportedActionException($this, 'send');
+    }
+
+    /** {@inheritDoc} */
+    public function read()
+    {
+        throw new UnsupportedActionException($this, 'read');
+    }
+
+    /** {@inheritDoc} */
+    public function getName()
+    {
+        return 'SocketIO';
     }
 
     /**
