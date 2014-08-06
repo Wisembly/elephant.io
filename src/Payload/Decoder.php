@@ -27,7 +27,7 @@ class Decoder extends AbstractPayload implements Countable
     private $payload;
     private $data;
 
-    private $length = 0;
+    private $length;
 
     /** @param string $payload Payload to decode */
     public function __construct($payload)
