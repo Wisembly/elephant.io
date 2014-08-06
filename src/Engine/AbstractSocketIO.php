@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
 use ElephantIO\EngineInterface,
     ElephantIO\Exception\UnsupportedActionException;
 
-abstract class SocketIO implements EngineInterface
+abstract class AbstractSocketIO implements EngineInterface
 {
     const CONNECT      = 0;
     const DISCONNECT   = 1;
@@ -26,9 +26,6 @@ abstract class SocketIO implements EngineInterface
     const BINARY_EVENT = 5;
     const BINARY_ACK   = 6;
 
-    const TRANSPORT_POLLING   = 'polling';
-    const TRANSPORT_WEBSOCKET = 'websocket';
-
     /** @var string[] Parse url result */
     protected $url;
 
@@ -37,6 +34,16 @@ abstract class SocketIO implements EngineInterface
 
     /** @var string[] Session information */
     protected $sessions;
+
+    /** @var mixed[] Array of options for the engine */
+    protected $options;
+
+    public function __construct($url, LoggerInterface $logger = null, array $options = [])
+    {
+        $this->logger  = $logger;
+        $this->url     = $this->parseUrl($url);
+        $this->options = array_replace($this->getDefaultOptions(), $options);
+    }
 
     /** {@inheritDoc} */
     public function connect()
@@ -75,15 +82,15 @@ abstract class SocketIO implements EngineInterface
     }
 
     /**
-     * Get the server information from the parsed URL
+     * Parse an url into parts we may expect
      *
      * @return string[] information on the given URL
      */
-    protected function getServerInformation()
+    protected function parseUrl($url)
     {
-        $server = array_replace($this->url, ['scheme' => 'http',
-                                             'host'   => 'localhost',
-                                             'path'   => 'socket.io']);
+        $server = array_replace(parse_url($url), ['scheme' => 'http',
+                                                  'host'   => 'localhost',
+                                                  'path'   => 'socket.io']);
 
         if (!isset($server['port'])) {
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
@@ -92,8 +99,6 @@ abstract class SocketIO implements EngineInterface
         if ('https' === $server['scheme']) {
             $server['scheme'] = 'ssl';
         }
-
-        $server['transport'] = $this->transport ?: static::TRANSPORT_POLLING;
 
         return $server;
     }
