@@ -49,12 +49,28 @@ class Version1X extends AbstractSocketIO
 
         try {
             $this->stream = new Stream(fsockopen($host, $server['port'], $errors[0], $errors[1]));
+            $this->logger && $this->logger->info('Connected to the server');
         } catch (InvalidArgumentException $e) {
             $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e, 'error' => $errors]);
 
             throw $e;
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public function close()
+    {
+        if (!$this->stream instanceof Stream) {
+            return;
+        }
+
+        $this->logger && $this->logger->info('Sending a closing message to the server');
+        $this->send(EngineInterface::CLOSE);
+
+        $this->logger && $this->logger->info('Closing the connection to the server');
+        $this->stream->close();
+        $this->stream = null;
     }
 
     /** {@inheritDoc} */
