@@ -57,7 +57,7 @@ class Version1X extends AbstractSocketIO
     }
 
     /** {@inheritDoc} */
-    protected function buildUrl()
+    protected function buildUrl($ssl = false)
     {
         $url = $this->getServerInformation();
 
@@ -69,7 +69,7 @@ class Version1X extends AbstractSocketIO
             $query = array_replace($query, $url['query']);
         }
 
-        return sprintf('%s://%s:%d/%s/?%s', $url['scheme'], $url['host'], $url['port'], $url['path'], http_build_query($query));
+        return sprintf('%s://%s:%d/%s/?%s', true === $ssl && true === $url['secured'] ? 'ssl' : $url['scheme'], $url['host'], $url['port'], $url['path'], http_build_query($query));
     }
 
     /** Does the handshake with the Socket.io server and populates the `session` value object */
@@ -79,7 +79,7 @@ class Version1X extends AbstractSocketIO
             return;
         }
 
-        $result  = file_get_contents($this->buildUrl());
+        $result  = file_get_contents($this->buildUrl(false));
         $decoded = json_decode(substr($result, strpos('{', $result), strrpos('}', $result)), true);
 
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);

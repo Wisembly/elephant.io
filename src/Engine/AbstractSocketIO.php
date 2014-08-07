@@ -96,9 +96,7 @@ abstract class AbstractSocketIO implements EngineInterface
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
         }
 
-        if ('https' === $server['scheme']) {
-            $server['scheme'] = 'ssl';
-        }
+        $server['secured'] = 'https' === $server['scheme'];
 
         return $server;
     }
@@ -119,6 +117,6 @@ abstract class AbstractSocketIO implements EngineInterface
      *
      * @return string URL built
      */
-    abstract protected function buildUrl();
+    abstract protected function buildUrl($ssl = false);
 }
 
