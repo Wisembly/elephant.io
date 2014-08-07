@@ -74,6 +74,12 @@ class Version1X extends AbstractSocketIO
     }
 
     /** {@inheritDoc} */
+    public function emit($event, array $args)
+    {
+        $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode([$event, $args]));
+    }
+
+    /** {@inheritDoc} */
     public function getName()
     {
         return 'SocketIO Version 1.X';
