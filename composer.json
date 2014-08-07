@@ -34,7 +34,7 @@
 
     "require": {
         "php": ">=5.4.0",
-        "guzzlehttp/guzzle": "~4.0",
+        "guzzlehttp/streams": "~1.4",
         "psr/log": "~1.0"
     },
 
