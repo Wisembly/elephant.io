@@ -64,9 +64,15 @@ abstract class AbstractSocketIO implements EngineInterface
     }
 
     /** {@inheritDoc} */
-    public function send()
+    public function write()
     {
-        throw new UnsupportedActionException($this, 'send');
+        throw new UnsupportedActionException($this, 'write');
+    }
+
+    /** {@inheritDoc} */
+    public function emit($event, array $args)
+    {
+        throw new UnsupportedActionException($this, 'emit');
     }
 
     /** {@inheritDoc} */

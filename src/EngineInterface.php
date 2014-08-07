@@ -40,8 +40,13 @@ interface EngineInterface
     /** Read data from the socket */
     public function read();
 
-    /** Sends data through the websocket */
-    public function send();
+    /**
+     * Emits a message through the websocket
+     *
+     * @param string $event Event to emit
+     * @param array  $args  Arguments to send
+     */
+    public function send($event, array $args);
 
     /** Keeps alive the connection */
     public function keepAlive();
