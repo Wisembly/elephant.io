@@ -50,3 +50,4 @@ class Session
         return $this->$prop;
     }
 }
+

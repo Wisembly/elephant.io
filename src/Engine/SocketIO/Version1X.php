@@ -11,6 +11,8 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
+use InvalidArgumentException;
+
 use Psr\Log\LoggerInterface;
 
 use GuzzleHttp\Stream\Stream;
@@ -36,6 +38,23 @@ class Version1X extends AbstractSocketIO
     public function connect()
     {
         $this->handshake();
+
+        if ($this->stream instanceof Stream) {
+            return;
+        }
+
+        $errors = [null, null];
+        $server = $this->getServerInformation();
+        $host   = sprintf('%s://%s', $server['secured'] ? 'ssl' : $server['scheme'], $server['host']);
+
+        try {
+            $this->stream = new Stream(fsockopen($host, $server['port'], $errors[0], $errors[1]));
+        } catch (InvalidArgumentException $e) {
+            $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e, 'error' => $errors]);
+
+            throw $e;
+        }
+
     }
 
     /** {@inheritDoc} */
