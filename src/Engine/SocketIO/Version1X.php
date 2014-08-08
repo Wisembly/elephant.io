@@ -135,7 +135,7 @@ class Version1X extends AbstractSocketIO
         }
 
         $result  = file_get_contents($this->buildUrl(false));
-        $decoded = json_decode(substr($result, strpos('{', $result), strrpos('}', $result)), true);
+        $decoded = json_decode(substr($result, strpos($result, '{')), true);
 
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
     }
