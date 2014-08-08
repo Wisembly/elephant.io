@@ -29,18 +29,14 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var string[] Parse url result */
     protected $url;
 
-    /** @var LoggerInterface */
-    protected $logger = null;
-
     /** @var string[] Session information */
     protected $sessions;
 
     /** @var mixed[] Array of options for the engine */
     protected $options;
 
-    public function __construct($url, LoggerInterface $logger = null, array $options = [])
+    public function __construct($url, array $options = [])
     {
-        $this->logger  = $logger;
         $this->url     = $this->parseUrl($url);
         $this->options = array_replace($this->getDefaultOptions(), $options);
     }

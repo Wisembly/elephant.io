@@ -70,13 +70,14 @@ class Client
     }
 
     /**
-     * Sends a message through the websocket (parameters to determine)
+     * Emits a message through the engine
      *
      * @return $this
      */
-    public function send()
+    public function emit($event, array $args)
     {
-        return $this;
+        null !== $this->logger && $this->logger->info('Sending a new message', ['event' => $event, 'args' => $args]);
+        $this->engine->emit($event, $args);
     }
 
     /**
@@ -90,6 +91,16 @@ class Client
         $this->engine->close();
 
         return $this;
+    }
+
+    /**
+     * Gets the engine used, for more advanced functions
+     *
+     * @return EngineInterface
+     */
+    public function getEngine()
+    {
+        return $this->engine;
     }
 }
 

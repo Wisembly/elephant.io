@@ -17,7 +17,8 @@ use Psr\Log\LoggerInterface;
 
 use GuzzleHttp\Stream\Stream;
 
-use ElephantIO\Engine\SocketIO;
+use ElephantIO\Engine\SocketIO,
+    ElephantIO\Exception\SocketException;
 
 /**
  * Implements the dialog with Socket.IO version 1.x
@@ -43,19 +44,15 @@ class Version1X extends AbstractSocketIO
             return;
         }
 
-        $errors = [null, null];
-        $server = $this->getServerInformation();
-        $host   = sprintf('%s://%s', $server['secured'] ? 'ssl' : $server['scheme'], $server['host']);
-
         try {
+            $errors = [null, null];
+            $server = $this->getServerInformation();
+            $host   = sprintf('%s://%s', $server['secured'] ? 'ssl' : $server['scheme'], $server['host']);
+
             $this->stream = new Stream(fsockopen($host, $server['port'], $errors[0], $errors[1]));
-            $this->logger && $this->logger->info('Connected to the server');
         } catch (InvalidArgumentException $e) {
-            $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e, 'error' => $errors]);
-
-            throw $e;
+            throw new SocketException($error[0], $error[1], $e);
         }
-
     }
 
     /** {@inheritDoc} */
@@ -65,10 +62,8 @@ class Version1X extends AbstractSocketIO
             return;
         }
 
-        $this->logger && $this->logger->info('Sending a closing message to the server');
         $this->send(EngineInterface::CLOSE);
 
-        $this->logger && $this->logger->info('Closing the connection to the server');
         $this->stream->close();
         $this->stream = null;
     }
