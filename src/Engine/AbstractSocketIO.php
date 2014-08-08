@@ -30,7 +30,7 @@ abstract class AbstractSocketIO implements EngineInterface
     protected $url;
 
     /** @var string[] Session information */
-    protected $sessions;
+    protected $session;
 
     /** @var mixed[] Array of options for the engine */
     protected $options;

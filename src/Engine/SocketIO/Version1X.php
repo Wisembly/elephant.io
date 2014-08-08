@@ -116,7 +116,7 @@ class Version1X extends AbstractSocketIO
     /** Does the handshake with the Socket.io server and populates the `session` value object */
     protected function handshake()
     {
-        if (null !== $this->sessions) {
+        if (null !== $this->session) {
             return;
         }
 
