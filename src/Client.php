@@ -13,6 +13,8 @@ namespace ElephantIO;
 
 use Psr\Log\LoggerInterface;
 
+use ElephantIO\Exception\SocketException;
+
 /**
  * Represents the IO Client which will send and receive the requests to the
  * websocket server
@@ -47,12 +49,17 @@ class Client
      */
     public function initialize($keepAlive = false)
     {
-        null !== $this->logger && $this->logger->info('Connecting to the websocket');
-        $this->engine->connect();
+        try {
+            null !== $this->logger && $this->logger->info('Connecting to the websocket');
+            $this->engine->connect();
+            null !== $this->logger && $this->logger->info('Connected to the server');
 
-        if (true === $keepAlive) {
-            null !== $this->logger && $this->logger->info('Keeping alive the connection to the websocket');
-            $this->engine->keepAlive();
+            if (true === $keepAlive) {
+                null !== $this->logger && $this->logger->info('Keeping alive the connection to the websocket');
+                $this->engine->keepAlive();
+            }
+        } catch (SocketException $e) {
+            null !== $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e]);
         }
 
         return $this;
