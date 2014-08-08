@@ -21,7 +21,8 @@ use ElephantIO\EngineInterface,
     ElephantIO\Engine\AbstractSocketIO,
 
     ElephantIO\Payload\Encoder,
-    ElephantIO\Exception\SocketException;
+    ElephantIO\Exception\SocketException,
+    ElephantIO\Exception\UnsupportedTransportException;
 
 /**
  * Implements the dialog with Socket.IO version 1.x
@@ -56,6 +57,7 @@ class Version1X extends AbstractSocketIO
             }
 
             $this->stream = new Stream(fsockopen($host, $this->url['port'], $errors[0], $errors[1]));
+            $this->upgradeTransport();
         } catch (InvalidArgumentException $e) {
             throw new SocketException($error[0], $error[1], $e);
         }
@@ -92,7 +94,7 @@ class Version1X extends AbstractSocketIO
         }
 
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
-        $this->stream->write((string) $payload);
+        return $this->stream->write((string) $payload);
     }
 
     /** {@inheritDoc} */
@@ -133,7 +135,16 @@ class Version1X extends AbstractSocketIO
         $result  = file_get_contents($url);
         $decoded = json_decode(substr($result, strpos($result, '{')), true);
 
+        if (!in_array('websocket', $decoded['upgrades'])) {
+            throw new UnsupportedTransportException('websocket');
+        }
+
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
+    }
+
+    /** Upgrades the transport to WebSocket */
+    private function upgradeTransport()
+    {
     }
 }
 
