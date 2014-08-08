@@ -62,10 +62,10 @@ abstract class AbstractSocketIO implements EngineInterface
     /**
      * Write the message to the socket
      *
-     * @param integer $type    type of message (one of EngineInterface constants)
+     * @param integer $code    type of message (one of EngineInterface constants)
      * @param string  $message Message to send, correctly formatted
      */
-    abstract public function write($type, $message = null);
+    abstract public function write($code, $message = null);
 
     /** {@inheritDoc} */
     public function emit($event, array $args)
