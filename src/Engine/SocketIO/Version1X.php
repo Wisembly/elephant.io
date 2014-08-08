@@ -49,10 +49,13 @@ class Version1X extends AbstractSocketIO
 
         try {
             $errors = [null, null];
-            $server = $this->getServerInformation();
-            $host   = sprintf('%s://%s', $server['secured'] ? 'ssl' : $server['scheme'], $server['host']);
+            $host   = $this->url['host'];
 
-            $this->stream = new Stream(fsockopen($host, $server['port'], $errors[0], $errors[1]));
+            if (true === $this->url['secured']) {
+                $host = 'ssl://' . $host;
+            }
+
+            $this->stream = new Stream(fsockopen($host, $this->url['port'], $errors[0], $errors[1]));
         } catch (InvalidArgumentException $e) {
             throw new SocketException($error[0], $error[1], $e);
         }
@@ -113,17 +116,15 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     protected function buildUrl($ssl = false)
     {
-        $url = $this->getServerInformation();
-
         $query = ['use_b64'   => $this->options['use_b64'],
                   'EIO'       => $this->options['version'],
                   'transport' => $this->options['transport']];
 
-        if (isset($url['query'])) {
-            $query = array_replace($query, $url['query']);
+        if (isset($this->url['query'])) {
+            $query = array_replace($query, $this->url['query']);
         }
 
-        return sprintf('%s://%s:%d/%s/?%s', true === $ssl && true === $url['secured'] ? 'ssl' : $url['scheme'], $url['host'], $url['port'], $url['path'], http_build_query($query));
+        return sprintf('%s://%s:%d/%s/?%s', true === $ssl && true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], $this->url['path'], http_build_query($query));
     }
 
     /** Does the handshake with the Socket.io server and populates the `session` value object */
