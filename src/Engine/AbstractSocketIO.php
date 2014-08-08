@@ -115,12 +115,5 @@ abstract class AbstractSocketIO implements EngineInterface
         return [['check_ssl' => false,
                  'debug'     => false]];
     }
-
-    /**
-     * Build the URL to establish a connection
-     *
-     * @return string URL built
-     */
-    abstract protected function buildUrl($ssl = false);
 }
 

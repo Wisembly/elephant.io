@@ -113,9 +113,13 @@ class Version1X extends AbstractSocketIO
         return $defaults;
     }
 
-    /** {@inheritDoc} */
-    protected function buildUrl($ssl = false)
+    /** Does the handshake with the Socket.io server and populates the `session` value object */
+    protected function handshake()
     {
+        if (null !== $this->sessions) {
+            return;
+        }
+
         $query = ['use_b64'   => $this->options['use_b64'],
                   'EIO'       => $this->options['version'],
                   'transport' => $this->options['transport']];
@@ -124,17 +128,9 @@ class Version1X extends AbstractSocketIO
             $query = array_replace($query, $this->url['query']);
         }
 
-        return sprintf('%s://%s:%d/%s/?%s', true === $ssl && true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], $this->url['path'], http_build_query($query));
-    }
+        $url = sprintf('%s://%s:%d/%s/?%s', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], $this->url['path'], http_build_query($query));
 
-    /** Does the handshake with the Socket.io server and populates the `session` value object */
-    protected function handshake()
-    {
-        if (null !== $this->sessions) {
-            return;
-        }
-
-        $result  = file_get_contents($this->buildUrl(false));
+        $result  = file_get_contents($url);
         $decoded = json_decode(substr($result, strpos($result, '{')), true);
 
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
