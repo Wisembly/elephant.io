@@ -17,7 +17,9 @@ use Psr\Log\LoggerInterface;
 
 use GuzzleHttp\Stream\Stream;
 
-use ElephantIO\Engine\SocketIO,
+use ElephantIO\EngineInterface,
+    ElephantIO\Engine\AbstractSocketIO,
+
     ElephantIO\Payload\Encoder,
     ElephantIO\Exception\SocketException;
 

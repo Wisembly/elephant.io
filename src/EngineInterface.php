@@ -46,7 +46,7 @@ interface EngineInterface
      * @param string $event Event to emit
      * @param array  $args  Arguments to send
      */
-    public function send($event, array $args);
+    public function emit($event, array $args);
 
     /** Keeps alive the connection */
     public function keepAlive();

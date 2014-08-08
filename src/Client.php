@@ -61,6 +61,8 @@ class Client
             }
         } catch (SocketException $e) {
             null !== $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e]);
+
+            throw $e;
         }
 
         return $this;

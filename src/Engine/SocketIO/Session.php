@@ -9,7 +9,7 @@
  * @license   http://www.opensource.org/licenses/MIT-License MIT License
  */
 
-namespace ElephantIO\SocketIO;
+namespace ElephantIO\Engine\SocketIO;
 
 /**
  * Represents the data for a Session
