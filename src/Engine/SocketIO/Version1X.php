@@ -11,7 +11,8 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use InvalidArgumentException;
+use InvalidArgumentException,
+    UnexpectedValueException;
 
 use Psr\Log\LoggerInterface;
 
