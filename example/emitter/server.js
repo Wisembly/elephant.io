@@ -12,7 +12,7 @@ io.on('connection', function (socket){
     logger.info('SocketIO > Connected socket ' + socket.id);
 
     socket.on('broadcast', function (message) {
-        logger.info('ElephantIO emitter > ' + message);
+        logger.info('ElephantIO broadcast > ' + JSON.stringify(message));
     });
 
     socket.on('disconnect', function () {
