@@ -42,11 +42,11 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function connect()
     {
-        $this->handshake();
-
         if ($this->stream instanceof Stream) {
             return;
         }
+
+        $this->handshake();
 
         try {
             $errors = [null, null];
@@ -145,6 +145,30 @@ class Version1X extends AbstractSocketIO
     /** Upgrades the transport to WebSocket */
     private function upgradeTransport()
     {
+        $query = ['transport' => 'websocket',
+                  'sid'       => $this->session->id,
+                  'EIO'       => $this->options['version'],
+                  'use_b64'   => $this->options['use_b64']];
+
+        $url = sprintf('/%s/?%s', $this->url['path'], http_build_query($query));
+        $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
+
+        $request = <<<REQUEST
+GET {$url} HTTP/1.1\r
+Host: {$this->url['host']}\r
+Upgrade: WebSocket\r
+Connection: Upgrade\r
+Sec-WebSocket-Key: {$key}\r
+Sec-WebSocket-Version: 13\r
+Origin: *\r\n\r\n
+REQUEST;
+
+        $this->stream->write($request);
+        $result = $this->stream->read(12);
+
+        if ('HTTP/1.1 101' !== $result) {
+            throw new UnexpectedValueException(sprintf('The server returned an unexpected value. Expected "%s", had "%s"', 'HTTP/1.1 101', $result));
+        }
     }
 }
 
