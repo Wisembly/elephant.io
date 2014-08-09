@@ -169,6 +169,8 @@ REQUEST;
         if ('HTTP/1.1 101' !== $result) {
             throw new UnexpectedValueException(sprintf('The server returned an unexpected value. Expected "%s", had "%s"', 'HTTP/1.1 101', $result));
         }
+
+        $this->write(EngineInterface::UPGRADE);
     }
 }
 
