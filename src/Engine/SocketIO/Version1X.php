@@ -16,8 +16,6 @@ use InvalidArgumentException,
 
 use Psr\Log\LoggerInterface;
 
-use GuzzleHttp\Stream\Stream;
-
 use ElephantIO\EngineInterface,
     ElephantIO\Engine\AbstractSocketIO,
 
@@ -37,43 +35,44 @@ class Version1X extends AbstractSocketIO
     const TRANSPORT_POLLING   = 'polling';
     const TRANSPORT_WEBSOCKET = 'websocket';
 
-    /** @var Stream */
+    /** @var resource Resource to the connected stream */
     protected $stream;
 
     /** {@inheritDoc} */
     public function connect()
     {
-        if ($this->stream instanceof Stream) {
+        if (is_resource($this->stream)) {
             return;
         }
 
         $this->handshake();
 
-        try {
-            $errors = [null, null];
-            $host   = $this->url['host'];
+        $errors = [null, null];
+        $host   = $this->url['host'];
 
-            if (true === $this->url['secured']) {
-                $host = 'ssl://' . $host;
-            }
-
-            $this->stream = new Stream(fsockopen($host, $this->url['port'], $errors[0], $errors[1]));
-            $this->upgradeTransport();
-        } catch (InvalidArgumentException $e) {
-            throw new SocketException($error[0], $error[1], $e);
+        if (true === $this->url['secured']) {
+            $host = 'ssl://' . $host;
         }
+
+        $this->stream = fsockopen($host, $this->url['port'], $errors[0], $errors[1]);
+
+        if (!is_resource($this->stream)) {
+            throw new SocketException($error[0], $error[1]);
+        }
+
+        $this->upgradeTransport();
     }
 
     /** {@inheritDoc} */
     public function close()
     {
-        if (!$this->stream instanceof Stream) {
+        if (!is_resource($this->stream)) {
             return;
         }
 
         $this->write(EngineInterface::CLOSE);
 
-        $this->stream->close();
+        fclose($this->stream);
         $this->stream = null;
     }
 
@@ -86,16 +85,16 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function write($code, $message = null)
     {
+        if (!is_resource($this->stream)) {
+            return;
+        }
+
         if (!is_int($code) || 0 > $code || 6 < $code) {
             throw new InvalidArgumentException('Wrong message type when trying to write on the socket');
         }
 
-        if (!$this->stream instanceof Stream) {
-            return;
-        }
-
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
-        return $this->stream->write((string) $payload);
+        return fwrite($this->stream, (string) $payload);
     }
 
     /** {@inheritDoc} */
@@ -131,7 +130,7 @@ class Version1X extends AbstractSocketIO
             $query = array_replace($query, $this->url['query']);
         }
 
-        $url = sprintf('%s://%s:%d/%s/?%s', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], $this->url['path'], http_build_query($query));
+        $url = sprintf('%s://%s:%d/%s/?%s', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
 
         $result  = file_get_contents($url);
         $decoded = json_decode(substr($result, strpos($result, '{')), true);
@@ -146,12 +145,12 @@ class Version1X extends AbstractSocketIO
     /** Upgrades the transport to WebSocket */
     private function upgradeTransport()
     {
-        $query = ['transport' => 'websocket',
-                  'sid'       => $this->session->id,
+        $query = ['sid'       => $this->session->id,
                   'EIO'       => $this->options['version'],
-                  'use_b64'   => $this->options['use_b64']];
+                  'use_b64'   => $this->options['use_b64'],
+                  'transport' => static::TRANSPORT_WEBSOCKET];
 
-        $url = sprintf('/%s/?%s', $this->url['path'], http_build_query($query));
+        $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
         $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
 
         $request = "GET {$url} HTTP/1.1\r\n"
@@ -162,12 +161,15 @@ class Version1X extends AbstractSocketIO
                  . "Sec-WebSocket-Version: 13\r\n"
                  . "Origin: *\r\n\r\n";
 
-        $this->stream->write($request);
-        $result = $this->stream->read(12);
+        fwrite($this->stream, $request);
+        $result = fread($this->stream, 12);
 
         if ('HTTP/1.1 101' !== $result) {
-            throw new UnexpectedValueException(sprintf('The server returned an unexpected value. Expected "%s", had "%s"', 'HTTP/1.1 101', $result));
+            throw new UnexpectedValueException(sprintf('The server returned an unexpected value. Expected "HTTP/1.1 101", had "%s"', $result));
         }
+
+        // cleaning up the stream
+        while ('' !== trim(fgets($this->stream)));
 
         $this->write(EngineInterface::UPGRADE);
     }
