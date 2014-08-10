@@ -11,6 +11,8 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
+use InvalidArgumentException;
+
 /**
  * Represents the data for a Session
  *
