@@ -112,8 +112,8 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function getDefaultOptions()
     {
-        return [['check_ssl' => false,
-                 'debug'     => false]];
+        return ['timeout' => 30,
+                'debug'   => false];
     }
 }
 

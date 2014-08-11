@@ -54,7 +54,7 @@ class Version1X extends AbstractSocketIO
             $host = 'ssl://' . $host;
         }
 
-        $this->stream = fsockopen($host, $this->url['port'], $errors[0], $errors[1]);
+        $this->stream = fsockopen($host, $this->url['port'], $errors[0], $errors[1], $this->options['timeout']);
 
         if (!is_resource($this->stream)) {
             throw new SocketException($error[0], $error[1]);
