@@ -37,7 +37,11 @@ interface EngineInterface
     /** Closes the connection to the websocket */
     public function close();
 
-    /** Read data from the socket */
+    /**
+     * Read data from the socket
+     *
+     * @return string Data read from the socket
+     */
     public function read();
 
     /**
