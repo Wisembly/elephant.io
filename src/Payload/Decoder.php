@@ -104,7 +104,9 @@ class Decoder extends AbstractPayload implements Countable
 
     public function __toString()
     {
-        return $this->data;
+        $this->decode();
+
+        return $this->data ?: '';
     }
 }
 
