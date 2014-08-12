@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+    <head>Client socket</head>
+    <body>
+        <script src="http://localhost:1337/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io('http://localhost:1337')
+            
+            socket.emit('broadcast', {'foo': 'bar'});
+        </script>
+    </body>
+</html>
+
