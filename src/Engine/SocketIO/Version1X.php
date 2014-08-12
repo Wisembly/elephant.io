@@ -60,6 +60,8 @@ class Version1X extends AbstractSocketIO
             throw new SocketException($error[0], $error[1]);
         }
 
+        stream_set_timeout($this->stream, $this->options['timeout']);
+
         $this->upgradeTransport();
     }
 
