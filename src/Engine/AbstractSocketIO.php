@@ -99,8 +99,8 @@ abstract class AbstractSocketIO implements EngineInterface
 
         // the second byte contains the mask bit and the payload's length
         $data  .= $part = fread($this->stream, 1);
-        $length = (int)  ($part & ~0b10000000); // removing the mask bit
-        $mask   = (bool) ($part &  0b10000000);
+        $length = (int)  (bin2hex($part) & ~0x80); // removing the mask bit
+        $mask   = (bool) (bin2hex($part) &  0x80);
 
         /*
          * Here is where it is getting tricky :
@@ -114,14 +114,14 @@ abstract class AbstractSocketIO implements EngineInterface
          * processors architectures).
          */
         switch ($length) {
-            case 0b1111101: // 125
+            case 0x7D: // 125
             break;
 
-            case 0b1111110: // 126
+            case 0x7E: // 126
                 $length = unpack('n', fread($this->stream, 2));
             break;
 
-            case 0b1111111: // 127
+            case 0x7F: // 127
                 // are (at least) 64 bits not supported by the architecture ?
                 if (8 > PHP_INT_SIZE) {
                     throw new DomainException('64 bits unsigned integer are not supported on this architecture');
@@ -144,7 +144,7 @@ abstract class AbstractSocketIO implements EngineInterface
         }
 
         // decode the payload
-        return (string) new Decoder(fread($this->stream, $length));
+        return (string) new Decoder($data . fread($this->stream, $length));
     }
 
     /** {@inheritDoc} */
