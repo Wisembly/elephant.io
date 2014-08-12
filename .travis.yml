@@ -14,5 +14,4 @@ before_script:
   - composer install --prefer-source --optimize-autoloader --no-interaction
 
 script:
-  # - bin/phpunit --coverage-text
-  - echo "not tested... yet"
+  - bin/phpunit --coverage-text
