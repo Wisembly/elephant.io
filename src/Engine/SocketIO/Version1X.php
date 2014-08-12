@@ -18,11 +18,12 @@ use DomainException,
 use Psr\Log\LoggerInterface;
 
 use ElephantIO\EngineInterface,
+    ElephantIO\Payload\Encoder,
     ElephantIO\Engine\AbstractSocketIO,
 
-    ElephantIO\Payload\Encoder,
     ElephantIO\Exception\SocketException,
-    ElephantIO\Exception\UnsupportedTransportException;
+    ElephantIO\Exception\UnsupportedTransportException,
+    ElephantIO\Exception\ServerConnectionFailureException;
 
 /**
  * Implements the dialog with Socket.IO version 1.x
@@ -129,9 +130,13 @@ class Version1X extends AbstractSocketIO
             $query = array_replace($query, $this->url['query']);
         }
 
-        $url = sprintf('%s://%s:%d/%s/?%s', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
+        $url    = sprintf('%s://%s:%d/%s/?%s', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
+        $result = @file_get_contents($url);
 
-        $result  = file_get_contents($url);
+        if (false === $result) {
+            throw new ServerConnectionFailureException;
+        }
+
         $decoded = json_decode(substr($result, strpos($result, '{')), true);
 
         if (!in_array('websocket', $decoded['upgrades'])) {
