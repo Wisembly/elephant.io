@@ -21,8 +21,6 @@ use ElephantIO\EngineInterface,
     ElephantIO\Engine\AbstractSocketIO,
 
     ElephantIO\Payload\Encoder,
-    ElephantIO\Payload\Decoder,
-
     ElephantIO\Exception\SocketException,
     ElephantIO\Exception\UnsupportedTransportException;
 
@@ -38,9 +36,6 @@ class Version1X extends AbstractSocketIO
 {
     const TRANSPORT_POLLING   = 'polling';
     const TRANSPORT_WEBSOCKET = 'websocket';
-
-    /** @var resource Resource to the connected stream */
-    protected $stream;
 
     /** {@inheritDoc} */
     public function connect()
@@ -99,70 +94,6 @@ class Version1X extends AbstractSocketIO
 
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
         return fwrite($this->stream, (string) $payload);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * Be careful, this method may hang your script, as we're not in a non
-     * blocking mode.
-     */
-    public function read()
-    {
-        /*
-         * The first byte contains the FIN bit, the reserved bits, and the
-         * opcode... We're not interested in them. Yet.
-         */
-        $data = fread($this->stream, 1);
-
-        // the second byte contains the mask bit and the payload's length
-        $data  .= $part = fread($this->stream, 1);
-        $length = (int)  ($part & ~0b10000000); // removing the mask bit
-        $mask   = (bool) ($part &  0b10000000);
-
-        /*
-         * Here is where it is getting tricky :
-         *
-         * - If the length <= 125, then we do not need to do anything ;
-         * - if the length is 126, it means that it is coded over the next 2 bytes ;
-         * - if the length is 127, it means that it is coded over the next 8 bytes.
-         *
-         * But,here's the trick : we cannot interpret a length over 127 if the
-         * system does not support 64bits integers (such as Windows, or 32bits
-         * processors architectures).
-         */
-        switch ($length) {
-            case 0b1111101: // 125
-            break;
-
-            case 0b1111110: // 126
-                $length = unpack('n', fread($this->stream, 2));
-            break;
-
-            case 0b1111111: // 127
-                // are (at least) 64 bits not supported by the architecture ?
-                if (8 > PHP_INT_SIZE) {
-                    throw new DomainException('64 bits unsigned integer are not supported on this architecture');
-                }
-
-                /*
-                 * As (un)pack does not support unpacking 64bits unsigned
-                 * integer, we need to split the data
-                 *
-                 * {@link http://stackoverflow.com/questions/14405751/pack-and-unpack-64-bit-integer}
-                 */
-                list($left, $right) = array_values(unpack('N2', fread($this->stream, 8)));
-                $length = $left << 32 | $right;
-            break;
-        }
-
-        // incorporate the mask key if the mask bit is 1
-        if (true === $mask) {
-            $data .= fread($this->stream, 4);
-        }
-
-        // decode the payload
-        return (string) new Decoder(fread($this->stream, $length));
     }
 
     /** {@inheritDoc} */
