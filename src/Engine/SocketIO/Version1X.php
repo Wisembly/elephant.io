@@ -47,13 +47,13 @@ class Version1X extends AbstractSocketIO
         $this->handshake();
 
         $errors = [null, null];
-        $host   = $this->url['host'];
+        $host   = sprintf('%s:%d', $this->url['host'], $this->url['port']);
 
         if (true === $this->url['secured']) {
             $host = 'ssl://' . $host;
         }
 
-        $this->stream = fsockopen($host, $this->url['port'], $errors[0], $errors[1], $this->options['timeout']);
+        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->options['context']));
 
         if (!is_resource($this->stream)) {
             throw new SocketException($error[0], $error[1]);

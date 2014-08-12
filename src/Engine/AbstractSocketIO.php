@@ -180,8 +180,9 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function getDefaultOptions()
     {
-        return ['timeout' => 30,
-                'debug'   => false];
+        return ['context' => [],
+                'debug'   => false,
+                'timeout' => ini_get("default_socket_timeout")];
     }
 }
 
