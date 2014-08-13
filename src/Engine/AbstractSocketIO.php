@@ -143,8 +143,14 @@ abstract class AbstractSocketIO implements EngineInterface
             $data .= fread($this->stream, 4);
         }
 
+        // Split the packet in case of the length > 16kb
+        while ($length > 0 && $buffer = fread($this->stream, $length)) {
+            $data   .= $buffer;
+            $length -= strlen($buffer);
+        }
+
         // decode the payload
-        return (string) new Decoder($data . fread($this->stream, $length));
+        return (string) new Decoder($data);
     }
 
     /** {@inheritDoc} */
