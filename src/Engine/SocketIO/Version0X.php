@@ -36,6 +36,16 @@ use ElephantIO\EngineInterface,
  */
 class Version0X extends AbstractSocketIO
 {
+    const CLOSE         = 0;
+    const OPEN          = 1;
+    const HEARTBEAT     = 2;
+    const MESSAGE       = 3;
+    const JOIN_MESSAGE  = 4;
+    const EVENT         = 5;
+    const ACK           = 6;
+    const ERROR         = 7;
+    const NOOP          = 8;
+
     const TRANSPORT_POLLING   = 'xhr-polling';
     const TRANSPORT_WEBSOCKET = 'websocket';
 
@@ -80,7 +90,7 @@ class Version0X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(EngineInterface::UPGRADE, json_encode(['name' => $event, 'args' => $args]));
+        $this->write(static::EVENT, json_encode(['name' => $event, 'args' => $args]));
     }
 
     /** {@inheritDoc} */
