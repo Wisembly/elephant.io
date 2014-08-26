@@ -154,7 +154,7 @@ class Version0X extends AbstractSocketIO
             return new UnsupportedTransportException('websocket');
         }
 
-        $url = sprintf('/%s/%d/%s/%s', trim($this->url['path'], '/'), $this->options['protocol'], $this->options['transport'], $this->session->__get('id'));
+        $url = sprintf('/%s/%d/%s/%s', trim($this->url['path'], '/'), $this->options['protocol'], $this->options['transport'], $this->session->id);
         if (isset($this->url['query'])) {
             $url .= '/?' . http_build_query(array_replace($query, $this->url['query']));
         }
