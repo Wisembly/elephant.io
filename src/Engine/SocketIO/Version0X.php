@@ -150,7 +150,7 @@ class Version0X extends AbstractSocketIO
     /** Upgrades the transport to WebSocket */
     private function upgradeTransport()
     {
-        if (!array_key_exists('websocket', $this->session->__get('upgrades'))) {
+        if (!array_key_exists('websocket', $this->session->upgrades)) {
             return new UnsupportedTransportException('websocket');
         }
 
