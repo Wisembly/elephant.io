@@ -32,7 +32,7 @@ class Decoder extends AbstractPayload implements Countable
     /** @param string $payload Payload to decode */
     public function __construct($payload)
     {
-    	parent::__construct($data, $opCode, $mask);
+    	parent::__construct($payload);
         $this->payload = $payload;
     }
 
