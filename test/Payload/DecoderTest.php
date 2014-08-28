@@ -25,7 +25,7 @@ class DecoderTest extends PHPUnit_Framework_TestCase
         $this->assertSame($expected, (string) $decoder);
 
         $this->assertPropSame(0x1, $decoder, 'fin');
-        $this->assertPropSame([0x0, 0x0, 0x0], $decoder, 'rsv');
+        $this->assertPropSame(array(0x0, 0x0, 0x0), $decoder, 'rsv');
         $this->assertPropSame(false, $decoder, 'mask');
         $this->assertPropSame("\x00\x00\x00\x00", $decoder, 'maskKey');
         $this->assertPropSame(Decoder::OPCODE_TEXT, $decoder, 'opCode');
@@ -53,8 +53,10 @@ PAYLOAD;
                    . '6e2036353533362e20536f0a746869732073686f756c6420646f207468'
                    . '6520747269636b2e2e2e';
 
-        return [[$shortMask, $short],
-                [$longMask, $long]];
+        return array(
+        		array($shortMask, $short),
+            array($longMask, $long)
+        );
     }
 
     /**
@@ -69,7 +71,7 @@ PAYLOAD;
         $this->assertSame($expected, (string) $decoder);
 
         $this->assertPropSame(0x1, $decoder, 'fin');
-        $this->assertPropSame([0x0, 0x0, 0x0], $decoder, 'rsv');
+        $this->assertPropSame(array(0x0, 0x0, 0x0), $decoder, 'rsv');
         $this->assertPropSame(true, $decoder, 'mask');
         $this->assertPropSame('?EV!', $decoder, 'maskKey');
         $this->assertPropSame(Decoder::OPCODE_TEXT, $decoder, 'opCode');
@@ -98,8 +100,10 @@ PAYLOAD;
                    . '1f313e40516560140a76600f1f16392b4b2d3f521f363e4e4a2932015b'
                    . '2a7655572076554d2c354a116b78';
 
-        return [[$shortMask, $short], // data encoded with < 125 characters
-                [$longMask, $long]];  // data encoded with > 125 characters but < 65536 characters
+        return array(
+        	array($shortMask, $short), // data encoded with < 125 characters
+          array($longMask, $long)
+        );  // data encoded with > 125 characters but < 65536 characters
     }
 
     private function assertPropSame($expected, $object, $property)
