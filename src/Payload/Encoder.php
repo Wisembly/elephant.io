@@ -34,6 +34,7 @@ class Encoder extends AbstractPayload
      */
     public function __construct($data, $opCode, $mask)
     {
+    	parent::__construct($data, $opCode, $mask);
         $this->data    = $data;
         $this->opCode  = $opCode;
         $this->mask    = (bool) $mask;
@@ -53,19 +54,19 @@ class Encoder extends AbstractPayload
         $length = strlen($this->data);
 
         if (0xFFFF < $length) {
-            $pack   = pack('NN', ($length & 0xFFFFFFFF00000000) >> 0b100000, $length & 0x00000000FFFFFFFF);
+            $pack   = pack('NN', ($length & 0xFFFFFFFF00000000) >> bindec(100000), $length & 0x00000000FFFFFFFF);
             $length = 0x007F;
         } elseif (0x007D < $length) {
             $pack   = pack('n*', $length);
             $length = 0x007E;
         }
 
-        $payload = ($this->fin << 0b001) | $this->rsv[0];
-        $payload = ($payload   << 0b001) | $this->rsv[1];
-        $payload = ($payload   << 0b001) | $this->rsv[2];
-        $payload = ($payload   << 0b100) | $this->opCode;
-        $payload = ($payload   << 0b001) | $this->mask;
-        $payload = ($payload   << 0b111) | $length;
+        $payload = ($this->fin << bindec(001)) | $this->rsv[0];
+        $payload = ($payload   << bindec(001)) | $this->rsv[1];
+        $payload = ($payload   << bindec(001)) | $this->rsv[2];
+        $payload = ($payload   << bindec(100)) | $this->opCode;
+        $payload = ($payload   << bindec(001)) | $this->mask;
+        $payload = ($payload   << bindec(111)) | $length;
 
         $data    = $this->data;
         $payload = pack('n', $payload) . $pack;
