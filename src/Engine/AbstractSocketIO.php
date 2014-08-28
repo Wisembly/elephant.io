@@ -168,13 +168,14 @@ abstract class AbstractSocketIO implements EngineInterface
     {
         $server = array_replace(['scheme' => 'http',
                                  'host'   => 'localhost',
+                                 'query'  => [],
                                  'path'   => 'socket.io'], parse_url($url));
 
         if (!isset($server['port'])) {
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
         }
 
-        if (isset($server['query'])) {
+        if (!is_array($server['query'])) {
             parse_str($server['query'], $query);
             $server['query'] = $query;
         }
