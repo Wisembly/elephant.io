@@ -33,8 +33,8 @@ class EncoderTest extends PHPUnit_Framework_TestCase
 
     public function providerShortPayload()
     {
-        return [[null, '8103666f6f'],
-                ['?EV!', '81833f455621592a39']];
+        return array(array(null, '8103666f6f'),
+                array('?EV!', '81833f455621592a39'));
     }
 
     /**
@@ -87,8 +87,8 @@ PAYLOAD
                   . '1f313e40516560140a76600f1f16392b4b2d3f521f363e4e4a2932015b'
                   . '2a7655572076554d2c354a116b78';
 
-        return [[null, $noMask],
-                ['?EV!', $withMask]];
+        return array(array(null, $noMask),
+                array('?EV!', $withMask));
     }
 }
 

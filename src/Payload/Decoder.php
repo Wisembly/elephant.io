@@ -32,6 +32,7 @@ class Decoder extends AbstractPayload implements Countable
     /** @param string $payload Payload to decode */
     public function __construct($payload)
     {
+    	parent::__construct($payload);
         $this->payload = $payload;
     }
 
@@ -51,14 +52,14 @@ class Decoder extends AbstractPayload implements Countable
 
         $payload = array_map('ord', str_split($this->payload));
 
-        $this->fin = ($payload[0] >> 0b111);
+        $this->fin = ($payload[0] >> bindec(111));
 
-        $this->rsv = [($payload[0] >> 0b110) & 0b1,  // rsv1
-                      ($payload[0] >> 0b101) & 0b1,  // rsv2
-                      ($payload[0] >> 0b100) & 0b1]; // rsv3
+        $this->rsv = array(($payload[0] >> bindec(110)) & bindec(1),  // rsv1
+                      ($payload[0] >> bindec(101)) & bindec(1),  // rsv2
+                      ($payload[0] >> bindec(100)) & bindec(1)); // rsv3
 
         $this->opCode = $payload[0] & 0xF;
-        $this->mask   = (bool) ($payload[1] >> 0b111);
+        $this->mask   = (bool) ($payload[1] >> bindec(111));
 
         $payloadOffset = 2;
 

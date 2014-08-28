@@ -38,14 +38,14 @@ class Session
         $this->upgrades  = $upgrades;
         $this->heartbeat = time();
 
-        $this->timeouts  = ['timeout'  => $timeout,
-                            'interval' => $interval];
+        $this->timeouts  = array('timeout'  => $timeout,
+                            'interval' => $interval);
     }
 
     /** The property should not be modified, hence the private accessibility on them */
     public function __get($prop)
     {
-        static $list = ['id', 'upgrades'];
+        static $list = array('id', 'upgrades');
 
         if (!in_array($prop, $list)) {
             throw new InvalidArgumentException(sprintf('Unknown property "%s" for the Session object. Only the following are availables : ["%s"]', $prop, implode('", "', $list)));

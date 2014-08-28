@@ -47,7 +47,7 @@ class Version1X extends AbstractSocketIO
 
         $this->handshake();
 
-        $errors = [null, null];
+        $errors = array(null, null);
         $host   = sprintf('%s:%d', $this->url['host'], $this->url['port']);
 
         if (true === $this->url['secured']) {
@@ -81,7 +81,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode([$event, $args]));
+        $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode(array($event, $args)));
     }
 
     /** {@inheritDoc} */
@@ -124,16 +124,16 @@ class Version1X extends AbstractSocketIO
             return;
         }
 
-        $query = ['use_b64'   => $this->options['use_b64'],
+        $query = array('use_b64'   => $this->options['use_b64'],
                   'EIO'       => $this->options['version'],
-                  'transport' => $this->options['transport']];
+                  'transport' => $this->options['transport']);
 
         if (isset($this->url['query'])) {
             $query = array_replace($query, $this->url['query']);
         }
 
         $url    = sprintf('%s://%s:%d/%s/?%s', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
-        $result = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
+        $result = @file_get_contents($url, false, stream_context_create(array('http' => array('timeout' => (float) $this->options['timeout']))));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
@@ -151,10 +151,10 @@ class Version1X extends AbstractSocketIO
     /** Upgrades the transport to WebSocket */
     private function upgradeTransport()
     {
-        $query = ['sid'       => $this->session->id,
+        $query = array('sid'       => $this->session->id,
                   'EIO'       => $this->options['version'],
                   'use_b64'   => $this->options['use_b64'],
-                  'transport' => static::TRANSPORT_WEBSOCKET];
+                  'transport' => static::TRANSPORT_WEBSOCKET);
 
         $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
         $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
