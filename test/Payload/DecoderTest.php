@@ -20,7 +20,7 @@ class DecoderTest extends PHPUnit_Framework_TestCase
     /** @dataProvider providerUnmaskedPayload */
     public function testUnmaskedPayload($payload, $expected)
     {
-        $decoder = new Decoder(hex2bin($payload));
+        $decoder = new Decoder(pack('H*', $payload));
 
         $this->assertSame($expected, (string) $decoder);
 
@@ -66,7 +66,7 @@ PAYLOAD;
      */
     public function testMaskedPayload($payload, $expected)
     {
-        $decoder = new Decoder(hex2bin($payload));
+        $decoder = new Decoder(pack('H*', $payload));
 
         $this->assertSame($expected, (string) $decoder);
 
