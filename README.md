@@ -17,6 +17,9 @@ Elephant.io
           ~~~~~~~~~~~~~~~~~~~
 ```
 
+The docs are not written yet, but you should check [the example directory](https://github.com/Wisembly/elephant.io/tree/master/example)
+to have a basic knownledge on how this library is meant to work.
+
 Installation
 ============
 You have multiple ways to install Elephant.io. If you are unsure what to do, go with
