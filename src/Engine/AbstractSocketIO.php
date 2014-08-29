@@ -166,10 +166,16 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function parseUrl($url)
     {
+        $parsed = parse_url($url);
+
+        if (false === $parsed) {
+            throw new MalformedUrlException($url);
+        }
+
         $server = array_replace(['scheme' => 'http',
                                  'host'   => 'localhost',
                                  'query'  => [],
-                                 'path'   => 'socket.io'], parse_url($url));
+                                 'path'   => 'socket.io'], $parsed);
 
         if (!isset($server['port'])) {
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
