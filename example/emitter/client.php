@@ -10,11 +10,11 @@
  */
 
 use ElephantIO\Client,
-    ElephantIO\Engine\SocketIO\Version1X;
+    ElephantIO\Engine\SocketIO\Version0X;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-$client = new Client(new Version1X('http://localhost:1337'));
+$client = new Client(new Version0X('http://localhost:1337'));
 
 $client->initialize();
 $client->emit('broadcast', ['foo' => 'bar']);

@@ -135,7 +135,7 @@ class Version0X extends AbstractSocketIO
         $url    = sprintf('%s://%s:%d/%s/%d', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), $this->options['protocol']);
 
         if (isset($this->url['query'])) {
-            $url .= '/?' . http_build_query(array_replace($query, $this->url['query']));
+            $url .= '/?' . http_build_query($this->url['query']);
         }
 
         $result = file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
@@ -166,7 +166,7 @@ class Version0X extends AbstractSocketIO
 
         $url = sprintf('/%s/%d/%s/%s', trim($this->url['path'], '/'), $this->options['protocol'], $this->options['transport'], $this->session->id);
         if (isset($this->url['query'])) {
-            $url .= '/?' . http_build_query(array_replace($query, $this->url['query']));
+            $url .= '/?' . http_build_query($this->url['query']);
         }
 
         $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
