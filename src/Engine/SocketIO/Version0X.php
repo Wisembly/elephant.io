@@ -138,7 +138,7 @@ class Version0X extends AbstractSocketIO
             $url .= '/?' . http_build_query($this->url['query']);
         }
 
-        $result = file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
+        $result = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
