@@ -132,7 +132,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
-        $url    = sprintf('%s://%s:%d/%s/%d', true === $this->url['secured'] ? 'ssl' : $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), $this->options['protocol']);
+        $url = sprintf('%s://%s:%d/%s/%d', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), $this->options['protocol']);
 
         if (isset($this->url['query'])) {
             $url .= '/?' . http_build_query($this->url['query']);
