@@ -200,6 +200,7 @@ abstract class AbstractSocketIO implements EngineInterface
     {
         return ['context' => [],
                 'debug'   => false,
+                'wait'    => 100*1000,
                 'timeout' => ini_get("default_socket_timeout")];
     }
 }

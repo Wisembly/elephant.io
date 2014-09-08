@@ -81,7 +81,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode([$event, $args]));
+        return $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode([$event, $args]));
     }
 
     /** {@inheritDoc} */
@@ -96,7 +96,12 @@ class Version1X extends AbstractSocketIO
         }
 
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
-        return fwrite($this->stream, (string) $payload);
+        $bytes = fwrite($this->stream, (string) $payload);
+
+        // wait a little bit of time after this message was sent
+        usleep((int) $this->options['wait']);
+
+        return $bytes;
     }
 
     /** {@inheritDoc} */
