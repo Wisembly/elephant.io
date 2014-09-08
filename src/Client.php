@@ -29,6 +29,8 @@ class Client
     /** @var LoggerInterface */
     private $logger;
 
+    private $isConnected = false;
+
     public function __construct(EngineInterface $engine, LoggerInterface $logger = null)
     {
         $this->engine = $engine;
@@ -37,9 +39,11 @@ class Client
 
     public function __destruct()
     {
-        try {
-            $this->close();
-        } catch (\Exception $e) {} // silently fail if we're not connected
+        if (!$this->isConnected) {
+            return;
+        }
+
+        $this->close();
     }
 
     /**
@@ -54,6 +58,8 @@ class Client
             null !== $this->logger && $this->logger->debug('Connecting to the websocket');
             $this->engine->connect();
             null !== $this->logger && $this->logger->debug('Connected to the server');
+
+            $this->isConnected = true;
 
             if (true === $keepAlive) {
                 null !== $this->logger && $this->logger->debug('Keeping alive the connection to the websocket');
@@ -101,6 +107,8 @@ class Client
     {
         null !== $this->logger && $this->logger->debug('Closing the connection to the websocket');
         $this->engine->close();
+
+        $this->isConnected = false;
 
         return $this;
     }
