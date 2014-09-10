@@ -63,6 +63,8 @@ class Version1X extends AbstractSocketIO
         stream_set_timeout($this->stream, $this->options['timeout']);
 
         $this->upgradeTransport();
+
+        $this->connectToNamespace();
     }
 
     /** {@inheritDoc} */
@@ -81,7 +83,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        return $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode([$event, $args]));
+        return $this->write(EngineInterface::MESSAGE, static::EVENT . $this->nsp . ',' . json_encode([$event, $args]));
     }
 
     /** {@inheritDoc} */
@@ -94,6 +96,8 @@ class Version1X extends AbstractSocketIO
         if (!is_int($code) || 0 > $code || 6 < $code) {
             throw new InvalidArgumentException('Wrong message type when trying to write on the socket');
         }
+
+        var_dump($code . $message);
 
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
         $bytes = fwrite($this->stream, (string) $payload);
@@ -120,6 +124,14 @@ class Version1X extends AbstractSocketIO
         $defaults['transport'] = static::TRANSPORT_POLLING;
 
         return $defaults;
+    }
+
+    protected function connectToNamespace()
+    {
+        if (!is_string($this->nsp) || $this->nsp == '/')
+            return;
+
+        $this->write(EngineInterface::MESSAGE, static::CONNECT . $this->nsp);
     }
 
     /** Does the handshake with the Socket.io server and populates the `session` value object */

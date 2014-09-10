@@ -41,10 +41,14 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var resource Resource to the connected stream */
     protected $stream;
 
-    public function __construct($url, array $options = [])
+    /** @var nsp Namespace */
+    protected $nsp = '/';
+
+    public function __construct($url, $nsp = '/', array $options = [])
     {
         $this->url     = $this->parseUrl($url);
         $this->options = array_replace($this->getDefaultOptions(), $options);
+        $this->nsp = $nsp;
     }
 
     /** {@inheritDoc} */
