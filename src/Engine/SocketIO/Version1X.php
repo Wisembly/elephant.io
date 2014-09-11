@@ -97,8 +97,6 @@ class Version1X extends AbstractSocketIO
             throw new InvalidArgumentException('Wrong message type when trying to write on the socket');
         }
 
-        var_dump($code . $message);
-
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
         $bytes = fwrite($this->stream, (string) $payload);
 
