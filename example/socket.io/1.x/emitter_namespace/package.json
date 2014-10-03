@@ -1,5 +1,5 @@
 {
-    "name": "elephantIO_example_emitter",
+    "name": "elephantIO_example_emitter_namespace",
     "version": "3.0.0",
     "main": "server.js",
 
