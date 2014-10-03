@@ -14,7 +14,7 @@ use ElephantIO\Client,
 
 require __DIR__ . '/../../../../vendor/autoload.php';
 
-$client = new Client(new Version1X('http://localhost:8083'));
+$client = new Client(new Version1X('http://localhost:1337'));
 
 $client->initialize();
 $client->emit('broadcast', ['foo' => 'bar']);
