@@ -57,7 +57,7 @@ class Version1X extends AbstractSocketIO
         $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->options['context']));
 
         if (!is_resource($this->stream)) {
-            throw new SocketException($error[0], $error[1]);
+            throw new SocketException($errors[0], $errors[1]);
         }
 
         stream_set_timeout($this->stream, $this->options['timeout']);
