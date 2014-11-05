@@ -41,7 +41,7 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var resource Resource to the connected stream */
     protected $stream;
 
-    public function __construct($url, array $options = [])
+    public function __construct($url, array $options = array())
     {
         $this->url     = $this->parseUrl($url);
         $this->options = array_replace($this->getDefaultOptions(), $options);
@@ -172,10 +172,10 @@ abstract class AbstractSocketIO implements EngineInterface
             throw new MalformedUrlException($url);
         }
 
-        $server = array_replace(['scheme' => 'http',
+        $server = array_replace(array('scheme' => 'http',
                                  'host'   => 'localhost',
-                                 'query'  => [],
-                                 'path'   => 'socket.io'], $parsed);
+                                 'query'  => array(),
+                                 'path'   => 'socket.io'), $parsed);
 
         if (!isset($server['port'])) {
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
@@ -198,10 +198,10 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function getDefaultOptions()
     {
-        return ['context' => [],
+        return array('context' => array(),
                 'debug'   => false,
                 'wait'    => 100*1000,
-                'timeout' => ini_get("default_socket_timeout")];
+                'timeout' => ini_get("default_socket_timeout"));
     }
 }
 

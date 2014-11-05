@@ -58,7 +58,7 @@ class Version0X extends AbstractSocketIO
 
         $this->handshake();
 
-        $errors = [null, null];
+        $errors = array(null, null);
         $host   = sprintf('%s:%d', $this->url['host'], $this->url['port']);
 
         if (true === $this->url['secured']) {
@@ -90,7 +90,7 @@ class Version0X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(static::EVENT, json_encode(['name' => $event, 'args' => $args]));
+        $this->write(static::EVENT, json_encode(array('name' => $event, 'args' => $args)));
     }
 
     /** {@inheritDoc} */
@@ -143,7 +143,7 @@ class Version0X extends AbstractSocketIO
             $url .= '/?' . http_build_query($this->url['query']);
         }
 
-        $result = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
+        $result = @file_get_contents($url, false, stream_context_create(array('http' => ['timeout' => (float) $this->options['timeout']])));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
