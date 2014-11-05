@@ -66,7 +66,7 @@ class Client
                 $this->engine->keepAlive();
             }
         } catch (SocketException $e) {
-            null !== $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e]);
+            null !== $this->logger && $this->logger->error('Could not connect to the server', array('exception' => $e));
 
             throw $e;
         }
@@ -92,7 +92,7 @@ class Client
      */
     public function emit($event, array $args)
     {
-        null !== $this->logger && $this->logger->debug('Sending a new message', ['event' => $event, 'args' => $args]);
+        null !== $this->logger && $this->logger->debug('Sending a new message', array('event' => $event, 'args' => $args));
         $this->engine->emit($event, $args);
 
         return $this;

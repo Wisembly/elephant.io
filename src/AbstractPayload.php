@@ -42,8 +42,8 @@ abstract class AbstractPayload
     const OPCODE_CONTROL_RESERVED_4 = 0xE;
     const OPCODE_CONTROL_RESERVED_5 = 0xF;
 
-    protected $fin = 0b1; // only one frame is necessary
-    protected $rsv = [0b0, 0b0, 0b0]; // rsv1, rsv2, rsv3
+    protected $fin = 0x1; // only one frame is necessary
+    protected $rsv = array(0x0, 0x0, 0x0); // rsv1, rsv2, rsv3
 
     protected $mask    = false;
     protected $maskKey = "\x00\x00\x00\x00";
