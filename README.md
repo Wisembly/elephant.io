@@ -6,7 +6,7 @@ Elephant.io
 [![License](https://poser.pugx.org/wisembly/elephant.io/license.svg)](https://packagist.org/packages/wisembly/elephant.io)
 
 ```
-        ___     _,.--.,_         Elephant.io is a rought websocket client
+        ___     _,.--.,_         Elephant.io is a rough websocket client
       .-~   ~--"~-.   ._ "-.     written in PHP. Its goal is to ease the
      /      ./_    Y    "-. \    communications between your PHP Application and
     Y       :~     !         Y   a real-time server.
