@@ -136,9 +136,12 @@ class Version1X extends AbstractSocketIO
         if (isset($this->url['query'])) {
             $query = array_replace($query, $this->url['query']);
         }
+        
+        $context = $this->options['context'];
+        $context['http'] = ['timeout' => (float) $this->options['timeout']];
 
         $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
-        $result = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
+        $result = @file_get_contents($url, false, stream_context_create($context));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
