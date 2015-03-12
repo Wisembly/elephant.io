@@ -186,6 +186,9 @@ class Version1X extends AbstractSocketIO
         while ('' !== trim(fgets($this->stream)));
 
         $this->write(EngineInterface::UPGRADE);
+        
+        //remove message '40' from buffer, emmiting by socket.io after receiving EngineInterface::UPGRADE
+        $this->read();
     }
 }
 
