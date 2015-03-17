@@ -12,6 +12,7 @@
 namespace ElephantIO\Engine;
 
 use DomainException;
+use RuntimeException;
 
 use Psr\Log\LoggerInterface;
 
@@ -118,7 +119,13 @@ abstract class AbstractSocketIO implements EngineInterface
             break;
 
             case 0x7E: // 126
-                $length = unpack('n', fread($this->stream, 2));
+                $bytes = unpack('n', fread($this->stream, 2));
+
+                if (empty($bytes[1])) {
+                    throw new RuntimeException('Invalid extended packet len');
+                }
+
+                $length = $bytes[1];
             break;
 
             case 0x7F: // 127
