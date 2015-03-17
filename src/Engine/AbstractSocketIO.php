@@ -119,7 +119,8 @@ abstract class AbstractSocketIO implements EngineInterface
             break;
 
             case 0x7E: // 126
-                $bytes = unpack('n', fread($this->stream, 2));
+                $data .= $bytes = fread($this->stream, 2);
+                $bytes = unpack('n', $bytes);
 
                 if (empty($bytes[1])) {
                     throw new RuntimeException('Invalid extended packet len');
@@ -140,7 +141,8 @@ abstract class AbstractSocketIO implements EngineInterface
                  *
                  * {@link http://stackoverflow.com/questions/14405751/pack-and-unpack-64-bit-integer}
                  */
-                list($left, $right) = array_values(unpack('N2', fread($this->stream, 8)));
+                $data .= $bytes = fread($this->stream, 8);
+                list($left, $right) = array_values(unpack('N2', $bytes));
                 $length = $left << 32 | $right;
             break;
         }
