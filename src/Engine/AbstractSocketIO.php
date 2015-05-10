@@ -41,6 +41,9 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var resource Resource to the connected stream */
     protected $stream;
 
+    /** @var mixed[] Array of php stream context wrappers */
+    protected $context;
+
     public function __construct($url, array $options = [])
     {
         $this->url     = $this->parseUrl($url);
@@ -189,6 +192,19 @@ abstract class AbstractSocketIO implements EngineInterface
         $server['secured'] = 'https' === $server['scheme'];
 
         return $server;
+    }
+
+    /** Initializes the stream context according to the options **/
+    protected function initContext() {
+        $this->context = [];
+        if (isset($this->options['context'])) {
+            if (isset($this->options['context']['http'])) {
+                $this->context['http'] = $this->options['context']['http'];
+            }
+            if (isset($this->options['context']['ssl'])) {
+                $this->context['ssl'] = $this->options['context']['ssl'];
+            }
+        }
     }
 
     /**

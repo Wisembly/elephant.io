@@ -56,6 +56,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
+        $this->initializeContext();
         $this->handshake();
 
         $errors = [null, null];
@@ -65,7 +66,7 @@ class Version0X extends AbstractSocketIO
             $host = 'ssl://' . $host;
         }
 
-        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->options['context']));
+        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->context));
 
         if (!is_resource($this->stream)) {
             throw new SocketException($error[0], $error[1]);
@@ -143,7 +144,10 @@ class Version0X extends AbstractSocketIO
             $url .= '/?' . http_build_query($this->url['query']);
         }
 
-        $result = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
+        $context = $this->context;
+        $context['timeout'] = (float) $this->options['timeout'];
+
+        $result = @file_get_contents($url, false, stream_context_create($context));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
