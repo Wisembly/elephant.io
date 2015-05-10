@@ -45,10 +45,17 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var string the namespace of the next message */
     protected $namespace = '';
 
+    /** @var mixed[] Array of php stream context options */
+    protected $context;
+
     public function __construct($url, array $options = [])
     {
         $this->url = $this->parseUrl($url);
         $this->options = array_replace($this->getDefaultOptions(), $options);
+
+        if (isset($this->options['context'])) {
+            $this->context = &$this->options['context'];
+        }
     }
 
     /** {@inheritDoc} */
