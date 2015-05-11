@@ -208,6 +208,27 @@ abstract class AbstractSocketIO implements EngineInterface
     }
 
     /**
+     * Searches the origin in the headers. If not found return '*';
+     *
+     * @return string the origin
+     */
+    protected function getOrigin() {
+        $origin = '*';
+        $headers = '';
+        if (isset($this->context['http']['header'])) {
+            $headers = is_array($this->context['http']['header']) ? 
+                join(';', $this->context['http']['header']) : 
+                $this->context['http']['header'];
+        }
+
+        if (preg_match('/Origin:\s*(.*?)(;|$)/', $headers, $matches)) {
+            $origin = $matches[1];
+        }
+
+        return $origin;
+    }
+
+    /**
      * Get the defaults options
      *
      * @return array mixed[] Defaults options for this engine

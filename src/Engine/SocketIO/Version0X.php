@@ -56,7 +56,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
-        $this->initializeContext();
+        $this->initContext();
         $this->handshake();
 
         $errors = [null, null];
@@ -186,7 +186,7 @@ class Version0X extends AbstractSocketIO
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
                  . "Sec-WebSocket-Version: 13\r\n"
-                 . "Origin: *\r\n\r\n";
+                 . "Origin: {$this->getOrigin()}\r\n\r\n";
 
         fwrite($this->stream, $request);
         $result = fread($this->stream, 12);
