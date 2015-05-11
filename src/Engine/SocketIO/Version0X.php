@@ -145,7 +145,7 @@ class Version0X extends AbstractSocketIO
         }
 
         $context = $this->context;
-        $context['timeout'] = (float) $this->options['timeout'];
+        $context['http']['timeout'] = (float) $this->options['timeout'];
 
         $result = @file_get_contents($url, false, stream_context_create($context));
 
