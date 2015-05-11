@@ -84,6 +84,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
+        $this->write(static::CLOSE);
         fclose($this->stream);
         $this->stream = null;
     }
@@ -91,7 +92,7 @@ class Version0X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(static::EVENT, json_encode(['name' => $event, 'args' => $args]));
+        $this->write(static::MESSAGE, json_encode($args));
     }
 
     /** {@inheritDoc} */
