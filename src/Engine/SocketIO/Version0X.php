@@ -105,13 +105,20 @@ class Version0X extends AbstractSocketIO
             throw new InvalidArgumentException('Wrong message type when trying to write on the socket');
         }
 
-        $payload = new Encoder($code . ':::' . $message, Encoder::OPCODE_TEXT, true);
+        $payload = new Encoder($code . '::' . $this->namespace . ':' . $message, Encoder::OPCODE_TEXT, true);
         $bytes = fwrite($this->stream, (string) $payload);
 
         // wait a little bit of time after this message was sent
         usleep($this->options['wait']);
 
         return $bytes;
+    }
+
+    /** {@inheritDoc} */
+    public function of($namespace) {
+        parent::of($namespace);
+
+        $this->write(static::OPEN);
     }
 
     /** {@inheritDoc} */
