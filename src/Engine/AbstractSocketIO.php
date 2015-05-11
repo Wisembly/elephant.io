@@ -41,8 +41,12 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var resource Resource to the connected stream */
     protected $stream;
 
+    /** @var string the namespace of the next message */
+    protected $namespace;
+
     public function __construct($url, array $options = [])
     {
+        $this->namespace = '';
         $this->url     = $this->parseUrl($url);
         $this->options = array_replace($this->getDefaultOptions(), $options);
     }
@@ -63,6 +67,11 @@ abstract class AbstractSocketIO implements EngineInterface
     public function close()
     {
         throw new UnsupportedActionException($this, 'close');
+    }
+
+    /** {@inheritDoc} */
+    public function of($namespace) {
+        $this->namespace = $namespace;
     }
 
     /**
@@ -198,10 +207,10 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function getDefaultOptions()
     {
-        return ['context' => [],
-                'debug'   => false,
-                'wait'    => 100*1000,
-                'timeout' => ini_get("default_socket_timeout")];
+        return ['context'   => [],
+                'debug'     => false,
+                'wait'      => 100*1000,
+                'timeout'   => ini_get("default_socket_timeout")];
     }
 }
 
