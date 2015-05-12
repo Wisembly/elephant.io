@@ -12,7 +12,8 @@
 use ElephantIO\Client,
     ElephantIO\Engine\SocketIO\Version1X;
 
-require __DIR__ . '/../../../../../../../vendor/autoload.php';
+echo __DIR__."\n";
+require __DIR__ . '/../../../../vendor/autoload.php';
 
 $client = new Client(new Version1X('http://localhost:1337'));
 
