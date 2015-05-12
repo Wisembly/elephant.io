@@ -90,18 +90,18 @@ abstract class AbstractSocketIO implements EngineInterface
         if (!is_resource($this->stream)) {
             return;
         }
-
+        
+        $data = fread($this->stream, 2);
+        $bytes = unpack('C*', $data);
+        
         /*
          * The first byte contains the FIN bit, the reserved bits, and the
          * opcode... We're not interested in them. Yet.
+         * the second byte contains the mask bit and the payload's length
          */
-        $data = fread($this->stream, 1);
-
-        // the second byte contains the mask bit and the payload's length
-        $data  .= $part = fread($this->stream, 1);
-        $length = (int)  (bin2hex($part) & ~0x80); // removing the mask bit
-        $mask   = (bool) (bin2hex($part) &  0x80);
-
+        $mask	= ($bytes[2] & 0b10000000) >> 7;
+        $length	= $bytes[2] & 0b01111111;
+        
         /*
          * Here is where it is getting tricky :
          *
@@ -113,18 +113,26 @@ abstract class AbstractSocketIO implements EngineInterface
          * system does not support 64bits integers (such as Windows, or 32bits
          * processors architectures).
          */
-        switch ($length) {
+    	switch ($length) {
             case 0x7D: // 125
             break;
 
             case 0x7E: // 126
-                $length = unpack('n', fread($this->stream, 2));
+                $data .= $extended_length_bin = fread($this->stream, 2);
+                
+            	$bytes = unpack('n', $extended_length_bin);
+                if (empty($bytes[1])) {
+                	throw new \RuntimeException('Invalid extended packet len');
+                }
+
+                $length = $bytes[1];
+                
             break;
 
             case 0x7F: // 127
                 // are (at least) 64 bits not supported by the architecture ?
                 if (8 > PHP_INT_SIZE) {
-                    throw new DomainException('64 bits unsigned integer are not supported on this architecture');
+                    throw new \DomainException('64 bits unsigned integer are not supported on this architecture');
                 }
 
                 /*
@@ -133,7 +141,8 @@ abstract class AbstractSocketIO implements EngineInterface
                  *
                  * {@link http://stackoverflow.com/questions/14405751/pack-and-unpack-64-bit-integer}
                  */
-                list($left, $right) = array_values(unpack('N2', fread($this->stream, 8)));
+                $data .= $extended_length_bin = fread($this->stream, 8);
+                list($left, $right) = array_values(unpack('N2', $extended_length_bin));
                 $length = $left << 32 | $right;
             break;
         }
