@@ -76,6 +76,7 @@ class Version1X extends AbstractSocketIO
 
         fclose($this->stream);
         $this->stream = null;
+        $this->session = null;
     }
 
     /** {@inheritDoc} */
@@ -136,7 +137,7 @@ class Version1X extends AbstractSocketIO
         if (isset($this->url['query'])) {
             $query = array_replace($query, $this->url['query']);
         }
-        
+
         $context = $this->options['context'];
         $context['http'] = ['timeout' => (float) $this->options['timeout']];
 
