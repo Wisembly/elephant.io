@@ -85,6 +85,7 @@ class Version0X extends AbstractSocketIO
 
         fclose($this->stream);
         $this->stream = null;
+        $this->session = null;
     }
 
     /** {@inheritDoc} */
