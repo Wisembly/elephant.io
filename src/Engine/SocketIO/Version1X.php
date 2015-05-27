@@ -45,6 +45,7 @@ class Version1X extends AbstractSocketIO
             return;
         }
 
+        $this->initContext();
         $this->handshake();
 
         $errors = [null, null];
@@ -54,7 +55,7 @@ class Version1X extends AbstractSocketIO
             $host = 'ssl://' . $host;
         }
 
-        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->options['context']));
+        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->context));
 
         if (!is_resource($this->stream)) {
             throw new SocketException($errors[0], $errors[1]);
@@ -137,9 +138,9 @@ class Version1X extends AbstractSocketIO
             $query = array_replace($query, $this->url['query']);
         }
         
-        $context = $this->options['context'];
-        $context['http'] = ['timeout' => (float) $this->options['timeout']];
-
+        $context = $this->context;
+        $context['http']['timeout'] = (float) $this->options['timeout'];
+        
         $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
         $result = @file_get_contents($url, false, stream_context_create($context));
 
@@ -173,7 +174,7 @@ class Version1X extends AbstractSocketIO
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
                  . "Sec-WebSocket-Version: 13\r\n"
-                 . "Origin: *\r\n\r\n";
+                 . "Origin: {$this->getOrigin()}\r\n\r\n";
 
         fwrite($this->stream, $request);
         $result = fread($this->stream, 12);

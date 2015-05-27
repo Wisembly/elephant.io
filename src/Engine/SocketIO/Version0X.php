@@ -56,6 +56,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
+        $this->initContext();
         $this->handshake();
 
         $errors = [null, null];
@@ -65,7 +66,7 @@ class Version0X extends AbstractSocketIO
             $host = 'ssl://' . $host;
         }
 
-        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->options['context']));
+        $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->context));
 
         if (!is_resource($this->stream)) {
             throw new SocketException($error[0], $error[1]);
@@ -83,6 +84,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
+        $this->write(static::CLOSE);
         fclose($this->stream);
         $this->stream = null;
     }
@@ -90,7 +92,7 @@ class Version0X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(static::EVENT, json_encode(['name' => $event, 'args' => $args]));
+        $this->write(static::MESSAGE, json_encode($args));
     }
 
     /** {@inheritDoc} */
@@ -143,7 +145,10 @@ class Version0X extends AbstractSocketIO
             $url .= '/?' . http_build_query($this->url['query']);
         }
 
-        $result = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => (float) $this->options['timeout']]]));
+        $context = $this->context;
+        $context['http']['timeout'] = (float) $this->options['timeout'];
+
+        $result = @file_get_contents($url, false, stream_context_create($context));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
@@ -182,7 +187,7 @@ class Version0X extends AbstractSocketIO
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
                  . "Sec-WebSocket-Version: 13\r\n"
-                 . "Origin: *\r\n\r\n";
+                 . "Origin: {$this->getOrigin()}\r\n\r\n";
 
         fwrite($this->stream, $request);
         $result = fread($this->stream, 12);

@@ -41,6 +41,9 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var resource Resource to the connected stream */
     protected $stream;
 
+    /** @var mixed[] Array of php stream context wrappers */
+    protected $context;
+
     public function __construct($url, array $options = [])
     {
         $this->url     = $this->parseUrl($url);
@@ -189,6 +192,40 @@ abstract class AbstractSocketIO implements EngineInterface
         $server['secured'] = 'https' === $server['scheme'];
 
         return $server;
+    }
+
+    /** Initializes the stream context according to the options **/
+    protected function initContext() {
+        $this->context = [];
+        if (isset($this->options['context'])) {
+            if (isset($this->options['context']['http'])) {
+                $this->context['http'] = $this->options['context']['http'];
+            }
+            if (isset($this->options['context']['ssl'])) {
+                $this->context['ssl'] = $this->options['context']['ssl'];
+            }
+        }
+    }
+
+    /**
+     * Searches the origin in the headers. If not found return '*';
+     *
+     * @return string the origin
+     */
+    protected function getOrigin() {
+        $origin = '*';
+        $headers = '';
+        if (isset($this->context['http']['header'])) {
+            $headers = is_array($this->context['http']['header']) ? 
+                join(';', $this->context['http']['header']) : 
+                $this->context['http']['header'];
+        }
+
+        if (preg_match('/Origin:\s*(.*?)(;|$)/', $headers, $matches)) {
+            $origin = $matches[1];
+        }
+
+        return $origin;
     }
 
     /**
