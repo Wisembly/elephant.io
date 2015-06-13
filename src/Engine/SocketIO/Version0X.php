@@ -11,14 +11,12 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use DomainException,
-    InvalidArgumentException,
+use InvalidArgumentException,
     UnexpectedValueException;
 
 use Psr\Log\LoggerInterface;
 
-use ElephantIO\EngineInterface,
-    ElephantIO\Payload\Encoder,
+use ElephantIO\Payload\Encoder,
     ElephantIO\Engine\AbstractSocketIO,
 
     ElephantIO\Exception\SocketException,
@@ -68,7 +66,7 @@ class Version0X extends AbstractSocketIO
         $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->options['context']));
 
         if (!is_resource($this->stream)) {
-            throw new SocketException($error[0], $error[1]);
+            throw new SocketException($errors[0], $errors[1]);
         }
 
         stream_set_timeout($this->stream, $this->options['timeout']);
@@ -131,7 +129,11 @@ class Version0X extends AbstractSocketIO
         return $defaults;
     }
 
-    /** Does the handshake with the Socket.io server and populates the `session` value object */
+    /**
+     * Does the handshake with the Socket.io server and populates the `session` value object
+     * @throws ServerConnectionFailureException
+     * @throws UnsupportedTransportException
+     */
     protected function handshake()
     {
         if (null !== $this->session) {
@@ -163,7 +165,10 @@ class Version0X extends AbstractSocketIO
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
     }
 
-    /** Upgrades the transport to WebSocket */
+    /**
+     * @throws UnsupportedTransportException
+     * @throws UnexpectedValueException
+     */
     private function upgradeTransport()
     {
         if (!array_key_exists('websocket', $this->session->upgrades)) {

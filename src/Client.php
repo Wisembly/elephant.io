@@ -31,6 +31,10 @@ class Client
 
     private $isConnected = false;
 
+    /**
+     * @param EngineInterface $engine
+     * @param LoggerInterface $logger
+     */
     public function __construct(EngineInterface $engine, LoggerInterface $logger = null)
     {
         $this->engine = $engine;
@@ -39,11 +43,9 @@ class Client
 
     public function __destruct()
     {
-        if (!$this->isConnected) {
-            return;
+        if ($this->isConnected) {
+            $this->close();
         }
-
-        $this->close();
     }
 
     /**
@@ -88,6 +90,8 @@ class Client
     /**
      * Emits a message through the engine
      *
+     * @param string $event Event to emit
+     * @param array $args  Arguments to send
      * @return $this
      */
     public function emit($event, array $args)
