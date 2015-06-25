@@ -93,7 +93,7 @@ abstract class AbstractSocketIO implements EngineInterface
     public function read()
     {
         if (!is_resource($this->stream)) {
-            return;
+            return null;
         }
 
         /*

@@ -88,7 +88,7 @@ class Version1X extends AbstractSocketIO
     public function write($code, $message = null)
     {
         if (!is_resource($this->stream)) {
-            return;
+            return null;
         }
 
         if (!is_int($code) || 0 > $code || 6 < $code) {

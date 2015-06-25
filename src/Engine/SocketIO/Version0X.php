@@ -96,7 +96,7 @@ class Version0X extends AbstractSocketIO
     public function write($code, $message = null)
     {
         if (!is_resource($this->stream)) {
-            return;
+            return null;
         }
 
         if (!is_int($code) || 0 > $code || 6 < $code) {
@@ -199,6 +199,7 @@ class Version0X extends AbstractSocketIO
 
         // cleaning up the stream
         while ('' !== trim(fgets($this->stream)));
+        return null;
     }
 }
 
