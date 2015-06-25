@@ -32,6 +32,12 @@ class Session
     /** @var string[] supported upgrades */
     private $upgrades;
 
+    /**
+     * @param int $id
+     * @param int $interval
+     * @param int $timeout
+     * @param array $upgrades
+     */
     public function __construct($id, $interval, $timeout, array $upgrades)
     {
         $this->id        = $id;
@@ -42,7 +48,11 @@ class Session
                             'interval' => $interval];
     }
 
-    /** The property should not be modified, hence the private accessibility on them */
+    /**
+     * The property should not be modified, hence the private accessibility on them
+     * @param string $prop Property name
+     * @return int|string[]
+     */
     public function __get($prop)
     {
         static $list = ['id', 'upgrades'];

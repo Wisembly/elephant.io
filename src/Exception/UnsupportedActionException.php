@@ -14,6 +14,7 @@ namespace ElephantIO\Exception;
 use BadMethodCallException;
 
 use ElephantIO\EngineInterface;
+use Exception;
 
 
 class UnsupportedActionException extends BadMethodCallException

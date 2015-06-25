@@ -29,7 +29,7 @@ class Encoder extends AbstractPayload
 
     /**
      * @param string  $data   data to encode
-     * @param integer $opcode OpCode to use (one of AbstractPayload's constant)
+     * @param integer $opCode OpCode to use (one of AbstractPayload's constant)
      * @param bool    $mask   Should we use a mask ?
      */
     public function __construct($data, $opCode, $mask)

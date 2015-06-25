@@ -11,8 +11,7 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use DomainException,
-    InvalidArgumentException,
+use InvalidArgumentException,
     UnexpectedValueException;
 
 use Psr\Log\LoggerInterface;
@@ -89,7 +88,7 @@ class Version1X extends AbstractSocketIO
     public function write($code, $message = null)
     {
         if (!is_resource($this->stream)) {
-            return;
+            return null;
         }
 
         if (!is_int($code) || 0 > $code || 6 < $code) {
@@ -123,7 +122,11 @@ class Version1X extends AbstractSocketIO
         return $defaults;
     }
 
-    /** Does the handshake with the Socket.io server and populates the `session` value object */
+    /**
+     * Does the handshake with the Socket.io server and populates the `session` value object
+     * @throws ServerConnectionFailureException
+     * @throws UnsupportedTransportException
+     */
     protected function handshake()
     {
         if (null !== $this->session) {
@@ -157,7 +160,10 @@ class Version1X extends AbstractSocketIO
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
     }
 
-    /** Upgrades the transport to WebSocket */
+    /**
+     * Upgrades the transport to WebSocket
+     * @throws UnexpectedValueException
+     */
     private function upgradeTransport()
     {
         $query = ['sid'       => $this->session->id,

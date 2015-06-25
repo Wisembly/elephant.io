@@ -41,6 +41,11 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var resource Resource to the connected stream */
     protected $stream;
 
+    /**
+     * @param $url
+     * @param array $options
+     * @throws MalformedUrlException
+     */
     public function __construct($url, array $options = [])
     {
         $this->url     = $this->parseUrl($url);
@@ -88,7 +93,7 @@ abstract class AbstractSocketIO implements EngineInterface
     public function read()
     {
         if (!is_resource($this->stream)) {
-            return;
+            return null;
         }
 
         /*
@@ -162,6 +167,8 @@ abstract class AbstractSocketIO implements EngineInterface
     /**
      * Parse an url into parts we may expect
      *
+     * @param string $url The URL to parse
+     * @throws MalformedUrlException
      * @return string[] information on the given URL
      */
     protected function parseUrl($url)
