@@ -12,6 +12,7 @@
 namespace ElephantIO\Engine;
 
 use DomainException;
+use RuntimeException;
 
 use Psr\Log\LoggerInterface;
 
@@ -94,13 +95,13 @@ abstract class AbstractSocketIO implements EngineInterface
         /*
          * The first byte contains the FIN bit, the reserved bits, and the
          * opcode... We're not interested in them. Yet.
+         * the second byte contains the mask bit and the payload's length
          */
-        $data = fread($this->stream, 1);
+        $data = fread($this->stream, 2);
+        $bytes = unpack('C*', $data);
 
-        // the second byte contains the mask bit and the payload's length
-        $data  .= $part = fread($this->stream, 1);
-        $length = hexdec(bin2hex($part) & ~0x80); // removing the mask bit
-        $mask   = (bool)(bin2hex($part) &  0x80);
+        $mask = ($bytes[2] & 0b10000000) >> 7;
+        $length = $bytes[2] & 0b01111111;
 
         /*
          * Here is where it is getting tricky :
@@ -118,7 +119,14 @@ abstract class AbstractSocketIO implements EngineInterface
             break;
 
             case 0x7E: // 126
-                $length = unpack('n', fread($this->stream, 2));
+                $data .= $bytes = fread($this->stream, 2);
+                $bytes = unpack('n', $bytes);
+
+                if (empty($bytes[1])) {
+                    throw new RuntimeException('Invalid extended packet len');
+                }
+
+                $length = $bytes[1];
             break;
 
             case 0x7F: // 127
@@ -133,7 +141,8 @@ abstract class AbstractSocketIO implements EngineInterface
                  *
                  * {@link http://stackoverflow.com/questions/14405751/pack-and-unpack-64-bit-integer}
                  */
-                list($left, $right) = array_values(unpack('N2', fread($this->stream, 8)));
+                $data .= $bytes = fread($this->stream, 8);
+                list($left, $right) = array_values(unpack('N2', $bytes));
                 $length = $left << 32 | $right;
             break;
         }
