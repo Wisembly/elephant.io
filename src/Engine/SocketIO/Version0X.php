@@ -83,6 +83,7 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
+        $this->write(static::CLOSE);
         fclose($this->stream);
         $this->stream = null;
         $this->session = null;
