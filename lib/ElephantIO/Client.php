@@ -356,9 +356,12 @@ class Client {
         }
 
         $key = $this->generateKey();
+        
+        $url = parse_url($this->serverHost);
+        $host = sprintf('%s:%d', $url['host'], array_key_exists('port', $url) ? $url['port'] : 80);
 
         $out  = "GET ".$this->serverPath."/websocket/".$this->session['sid']." HTTP/1.1\r\n";
-        $out .= "Host: ".$this->serverHost."\r\n";
+        $out .= "Host: ".$host."\r\n";
         $out .= "Upgrade: WebSocket\r\n";
         $out .= "Connection: Upgrade\r\n";
         $out .= "Sec-WebSocket-Key: ".$key."\r\n";
