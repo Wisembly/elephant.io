@@ -82,7 +82,14 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        return $this->write(EngineInterface::MESSAGE, static::EVENT . json_encode([$event, $args]));
+         $namespace = ($this->namespace != '') ? $this->namespace.',' : '';
+        return $this->write(EngineInterface::MESSAGE, static::EVENT . $namespace . json_encode([$event, $args]));
+    }
+
+    /** {@inheritDoc} */
+    public function of($namespace) {
+        parent::of($namespace);
+        $this->write(EngineInterface::MESSAGE, static::CONNECT . $this->namespace);
     }
 
     /** {@inheritDoc} */
