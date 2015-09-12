@@ -100,6 +100,20 @@ class Client
     }
 
     /**
+     * Sets the namespace for the next messages
+     *
+     * @param string namespace the name of the namespace
+     * @return $this
+     */
+    public function of($namespace)
+    {
+        $this->logger->debug('Setting the namespace', ['namespace' => $namespace]);
+        $this->engine->of($namespace);
+
+        return $this;
+    }
+
+    /**
      * Closes the connection
      *
      * @return $this
