@@ -11,13 +11,14 @@
 
 namespace ElephantIO;
 
+use Psr\Log\NullLogger;
 use Psr\Log\LoggerInterface;
 
 use ElephantIO\Exception\SocketException;
 
 /**
  * Represents the IO Client which will send and receive the requests to the
- * websocket server
+ * websocket server. It basically suggercoat the Engine used with loggers.
  *
  * @author Baptiste Clavié <baptiste@wisembly.com>
  */
@@ -34,7 +35,7 @@ class Client
     public function __construct(EngineInterface $engine, LoggerInterface $logger = null)
     {
         $this->engine = $engine;
-        $this->logger = $logger;
+        $this->logger = $logger ?: new NullLogger;
     }
 
     public function __destruct()
@@ -55,18 +56,18 @@ class Client
     public function initialize($keepAlive = false)
     {
         try {
-            null !== $this->logger && $this->logger->debug('Connecting to the websocket');
+            $this->logger->debug('Connecting to the websocket');
             $this->engine->connect();
-            null !== $this->logger && $this->logger->debug('Connected to the server');
+            $this->logger->debug('Connected to the server');
 
             $this->isConnected = true;
 
             if (true === $keepAlive) {
-                null !== $this->logger && $this->logger->debug('Keeping alive the connection to the websocket');
+                $this->logger->debug('Keeping alive the connection to the websocket');
                 $this->engine->keepAlive();
             }
         } catch (SocketException $e) {
-            null !== $this->logger && $this->logger->error('Could not connect to the server', ['exception' => $e]);
+            $this->logger->error('Could not connect to the server', ['exception' => $e]);
 
             throw $e;
         }
@@ -81,7 +82,7 @@ class Client
      */
     public function read()
     {
-        null !== $this->logger && $this->logger->debug('Reading a new message from the socket');
+        $this->logger->debug('Reading a new message from the socket');
         return $this->engine->read();
     }
 
@@ -92,7 +93,7 @@ class Client
      */
     public function emit($event, array $args)
     {
-        null !== $this->logger && $this->logger->debug('Sending a new message', ['event' => $event, 'args' => $args]);
+        $this->logger->debug('Sending a new message', ['event' => $event, 'args' => $args]);
         $this->engine->emit($event, $args);
 
         return $this;
@@ -105,7 +106,7 @@ class Client
      */
     public function close()
     {
-        null !== $this->logger && $this->logger->debug('Closing the connection to the websocket');
+        $this->logger->debug('Closing the connection to the websocket');
         $this->engine->close();
 
         $this->isConnected = false;
