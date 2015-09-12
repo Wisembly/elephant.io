@@ -28,6 +28,11 @@ Installation
 You have multiple ways to install Elephant.io. If you are unsure what to do, go with
 [the archive release](#archive-release).
 
+Once the library is downloaded and extracted wherever you want it to be, it
+should be loaded through a [PSR-4](http://www.php-fig.org/psr/psr-4/) autoload
+mecanism, with a `Wisembly\ElepehantIO` prefix. This is not necessary with the
+composer way, as it is handling this part by itself.
+
 Archive Release
 ---------------
 1. Download the most recent release from the [release page](https://github.com/Wisembly/elephant.io/releases)
