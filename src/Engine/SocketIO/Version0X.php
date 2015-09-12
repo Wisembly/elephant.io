@@ -192,13 +192,25 @@ class Version0X extends AbstractSocketIO
 
         $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
 
+        $origin = '*';
+        $headers = isset($this->context['headers']) ? (array) $this->context['headers'] : [] ;
+
+        foreach ($headers as $header) {
+            $matches = [];
+
+            if (preg_match('`^Origin:\s*(.+?)$`', $header, $matches)) {
+                $origin = $matches[1];
+                break;
+            }
+        }
+
         $request = "GET {$url} HTTP/1.1\r\n"
                  . "Host: {$this->url['host']}\r\n"
                  . "Upgrade: WebSocket\r\n"
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
                  . "Sec-WebSocket-Version: 13\r\n"
-                 . "Origin: *\r\n\r\n";
+                 . "Origin: {$origin}\r\n\r\n";
 
         fwrite($this->stream, $request);
         $result = fread($this->stream, 12);
