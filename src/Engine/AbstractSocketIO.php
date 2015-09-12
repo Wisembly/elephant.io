@@ -94,13 +94,13 @@ abstract class AbstractSocketIO implements EngineInterface
         /*
          * The first byte contains the FIN bit, the reserved bits, and the
          * opcode... We're not interested in them. Yet.
+         * the second byte contains the mask bit and the payload's length
          */
-        $data = fread($this->stream, 1);
+        $data = fread($this->stream, 2);
+        $bytes = unpack('C*', $data);
 
-        // the second byte contains the mask bit and the payload's length
-        $data  .= $part = fread($this->stream, 1);
-        $length = hexdec(bin2hex($part) & ~0x80); // removing the mask bit
-        $mask   = (bool)(bin2hex($part) &  0x80);
+        $mask = ($bytes[2] & 0b10000000) >> 7;
+        $length = $bytes[2] & 0b01111111;
 
         /*
          * Here is where it is getting tricky :
