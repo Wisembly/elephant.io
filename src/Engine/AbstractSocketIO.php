@@ -15,9 +15,9 @@ use DomainException;
 
 use Psr\Log\LoggerInterface;
 
-use ElephantIO\EngineInterface,
-    ElephantIO\Payload\Decoder,
-    ElephantIO\Exception\UnsupportedActionException;
+use ElephantIO\EngineInterface;
+use ElephantIO\Payload\Decoder;
+use ElephantIO\Exception\UnsupportedActionException;
 
 abstract class AbstractSocketIO implements EngineInterface
 {

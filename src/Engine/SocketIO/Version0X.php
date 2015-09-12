@@ -11,19 +11,19 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use DomainException,
-    InvalidArgumentException,
-    UnexpectedValueException;
+use DomainException;
+use InvalidArgumentException;
+use UnexpectedValueException;
 
 use Psr\Log\LoggerInterface;
 
-use ElephantIO\EngineInterface,
-    ElephantIO\Payload\Encoder,
-    ElephantIO\Engine\AbstractSocketIO,
+use ElephantIO\EngineInterface;
+use ElephantIO\Payload\Encoder;
+use ElephantIO\Engine\AbstractSocketIO;
 
-    ElephantIO\Exception\SocketException,
-    ElephantIO\Exception\UnsupportedTransportException,
-    ElephantIO\Exception\ServerConnectionFailureException;
+use ElephantIO\Exception\SocketException;
+use ElephantIO\Exception\UnsupportedTransportException;
+use ElephantIO\Exception\ServerConnectionFailureException;
 
 
 /**

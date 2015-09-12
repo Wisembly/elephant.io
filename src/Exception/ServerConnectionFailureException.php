@@ -11,8 +11,8 @@
 
 namespace ElephantIO\Exception;
 
-use Exception,
-    RuntimeException;
+use Exception;
+use RuntimeException;
 
 class ServerConnectionFailureException extends RuntimeException
 {
