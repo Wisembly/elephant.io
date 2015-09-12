@@ -9,8 +9,8 @@
  * @license   http://www.opensource.org/licenses/MIT-License MIT License
  */
 
-use ElephantIO\Client,
-    ElephantIO\Engine\SocketIO\Version1X;
+use ElephantIO\Client;
+use ElephantIO\Engine\SocketIO\Version1X;
 
 require __DIR__ . '/../../../../vendor/autoload.php';
 

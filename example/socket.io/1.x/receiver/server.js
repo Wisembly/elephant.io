@@ -14,6 +14,10 @@ io.on('connection', function (socket){
     socket.on('disconnect', function () {
         logger.info('SocketIO > Disconnected socket ' + socket.id);
     });
+
+    socket.on('broadcast', function (message) {
+        logger.info('ElephantIO broadcast > ' + JSON.stringify(message));
+    });
 });
 
 server.listen(port);

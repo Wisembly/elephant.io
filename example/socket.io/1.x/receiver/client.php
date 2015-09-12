@@ -9,16 +9,22 @@
  * @license   http://www.opensource.org/licenses/MIT-License MIT License
  */
 
-use ElephantIO\Client,
-    ElephantIO\Engine\SocketIO\Version1X;
+use ElephantIO\Client;
+use ElephantIO\Engine\SocketIO\Version1X;
 
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../../../../vendor/autoload.php';
 
 $client = new Client(new Version1X('http://localhost:1337'));
 
 $client->initialize();
-$r = $client->read();
-$client->close();
 
-var_dump($r);
+while (true) {
+    $r = $client->read();
+
+    if (!empty($r)) {
+        var_dump($r);
+    }
+}
+
+$client->close();
 
