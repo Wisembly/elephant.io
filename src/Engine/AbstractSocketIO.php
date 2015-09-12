@@ -43,12 +43,11 @@ abstract class AbstractSocketIO implements EngineInterface
     protected $stream;
 
     /** @var string the namespace of the next message */
-    protected $namespace;
+    protected $namespace = '';
 
     public function __construct($url, array $options = [])
     {
-        $this->namespace = '';
-        $this->url     = $this->parseUrl($url);
+        $this->url = $this->parseUrl($url);
         $this->options = array_replace($this->getDefaultOptions(), $options);
     }
 
