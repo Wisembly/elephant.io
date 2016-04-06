@@ -20,8 +20,11 @@ Elephant.io
           ~~~~~~~~~~~~~~~~~~~
 ```
 
-The docs are not written yet, but you should check [the example directory](https://github.com/Wisembly/elephant.io/tree/master/example)
-to have a basic knownledge on how this library is meant to work.
+NOTICE
+======
+As we are not using Elephant.io anymore at Wisembly, and not having the time to
+maintain this library, we are looking for maintainers. Please look at the dedicated
+issue #135 !
 
 Installation
 ============
@@ -59,6 +62,11 @@ Via Composer
     ```
 
 3. Install via composer : `php composer.phar install`
+
+Documentation
+=============
+The docs are not written yet, but you should check [the example directory](https://github.com/Wisembly/elephant.io/tree/master/example)
+to have a basic knownledge on how this library is meant to work.
 
 Special Thanks
 ==============
