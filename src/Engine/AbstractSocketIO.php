@@ -19,6 +19,7 @@ use Psr\Log\LoggerInterface;
 use ElephantIO\EngineInterface;
 use ElephantIO\Payload\Decoder;
 use ElephantIO\Exception\UnsupportedActionException;
+use ElephantIO\Exception\MalformedUrlException;
 
 abstract class AbstractSocketIO implements EngineInterface
 {
