@@ -34,6 +34,9 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var string[] Parse url result */
     protected $url;
 
+    /** @var array cookies received during handshake */
+    protected $cookies = [];
+
     /** @var string[] Session information */
     protected $session;
 

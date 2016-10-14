@@ -87,6 +87,7 @@ class Version0X extends AbstractSocketIO
         fclose($this->stream);
         $this->stream = null;
         $this->session = null;
+        $this->cookies = [];
     }
 
     /** {@inheritDoc} */
@@ -176,6 +177,14 @@ class Version0X extends AbstractSocketIO
             throw new UnsupportedTransportException('websocket');
         }
 
+        $cookies = [];
+        foreach ($http_response_header as $header) {
+            if (preg_match('/^Set-Cookie:\s*([^;]*)/i', $header, $matches)) {
+                $cookies[] = $matches[1];
+            }
+        }
+        $this->cookies = $cookies;
+
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
     }
 
@@ -211,7 +220,13 @@ class Version0X extends AbstractSocketIO
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
                  . "Sec-WebSocket-Version: 13\r\n"
-                 . "Origin: {$origin}\r\n\r\n";
+                 . "Origin: {$origin}\r\n";
+
+        if (!empty($this->cookies)) {
+            $request .= "Cookie: " . implode('; ', $this->cookies) . "\r\n";
+        }
+
+        $request .= "\r\n";
 
         fwrite($this->stream, $request);
         $result = fread($this->stream, 12);
