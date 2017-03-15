@@ -28,40 +28,7 @@ issue #135 !
 
 Installation
 ============
-You have multiple ways to install Elephant.io. If you are unsure what to do, go with
-[the archive release](#archive-release).
-
-Once the library is downloaded and extracted wherever you want it to be, it
-should be loaded through a [PSR-4](http://www.php-fig.org/psr/psr-4/) autoload
-mecanism, with a `Wisembly\ElepehantIO` prefix. This is not necessary with the
-composer way, as it is handling this part by itself.
-
-Archive Release
----------------
-1. Download the most recent release from the [release page](https://github.com/Wisembly/elephant.io/releases)
-2. Unpack the archive
-3. Move the files somewhere in your project
-
-Development version
--------------------
-1. Install Git
-2. `git clone git://github.com/Wisembly/elephant.io.git`
-
-Via Composer
-------------
-1. Install composer in your project: `curl -s http://getcomposer.org/installer | php`
-2. Create a `composer.json` file (or update it) in your project root:
-
-    ```javascript
-
-      {
-        "require": {
-          "wisembly/elephant.io": "~3.0"
-        }
-      }
-    ```
-
-3. Install via composer : `php composer.phar install`
+We are suggesting you to use composer, with the following : `php composer.phar require wisembly/elephant.io`. For other ways, you can check the release page, or the git clone urls.
 
 Documentation
 =============
