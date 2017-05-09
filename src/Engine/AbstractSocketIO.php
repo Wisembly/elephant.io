@@ -12,6 +12,7 @@
 namespace ElephantIO\Engine;
 
 use DomainException;
+use ElephantIO\Engine\SocketIO\Session;
 use RuntimeException;
 
 use Psr\Log\LoggerInterface;
@@ -37,7 +38,7 @@ abstract class AbstractSocketIO implements EngineInterface
     /** @var array cookies received during handshake */
     protected $cookies = [];
 
-    /** @var string[] Session information */
+    /** @var Session Session information */
     protected $session;
 
     /** @var mixed[] Array of options for the engine */
@@ -189,6 +190,8 @@ abstract class AbstractSocketIO implements EngineInterface
 
     /**
      * Parse an url into parts we may expect
+     *
+     * @param string $url
      *
      * @return string[] information on the given URL
      */

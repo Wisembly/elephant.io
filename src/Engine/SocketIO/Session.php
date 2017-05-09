@@ -42,7 +42,12 @@ class Session
                             'interval' => $interval];
     }
 
-    /** The property should not be modified, hence the private accessibility on them */
+	/**
+	 * The property should not be modified, hence the private accessibility on them
+	 *
+	 * @param string $prop
+	 * @return mixed
+	 */
     public function __get($prop)
     {
         static $list = ['id', 'upgrades'];
