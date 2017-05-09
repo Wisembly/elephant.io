@@ -167,8 +167,8 @@ class Version1X extends AbstractSocketIO
             throw new ServerConnectionFailureException;
         }
 
-	    $open_curly_at = strpos($result, '{');
-	    $todecode = substr($result, $open_curly_at, strrpos($result, '}')-$open_curly_at+1);
+        $open_curly_at = strpos($result, '{');
+        $todecode = substr($result, $open_curly_at, strrpos($result, '}')-$open_curly_at+1);
         $decoded = json_decode($todecode, true);
 
         if (!in_array('websocket', $decoded['upgrades'])) {
@@ -186,18 +186,27 @@ class Version1X extends AbstractSocketIO
         $this->session = new Session($decoded['sid'], $decoded['pingInterval'], $decoded['pingTimeout'], $decoded['upgrades']);
     }
 
-    /** Upgrades the transport to WebSocket */
+    /**
+     * Upgrades the transport to WebSocket
+     *
+     * FYI:
+     * Version "2" is used for the EIO param by socket.io v1
+     * Version "3" is used by socket.io v2
+     */
     protected function upgradeTransport()
     {
         $query = ['sid'       => $this->session->id,
                   'EIO'       => $this->options['version'],
                   'transport' => static::TRANSPORT_WEBSOCKET];
 
-	    if ($this->options['version'] === 2)
-	        $query['use_b64'] = $this->options['use_b64'];
+        if ($this->options['version'] === 2)
+            $query['use_b64'] = $this->options['use_b64'];
 
         $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
-        $key = base64_encode(openssl_random_pseudo_bytes(16));
+        $hash = sha1(uniqid(mt_rand(), true), true);
+        if ($this->options['version'] !== 2)
+            $hash = substr($hash, 0, 16);
+        $key = base64_encode($hash);
 
         $origin = '*';
         $headers = isset($this->context['headers']) ? (array) $this->context['headers'] : [] ;
