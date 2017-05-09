@@ -25,28 +25,17 @@ use ElephantIO\Exception\SocketException;
 use ElephantIO\Exception\UnsupportedTransportException;
 use ElephantIO\Exception\ServerConnectionFailureException;
 
-
 /**
- * Implements the dialog with Socket.IO version 0.x
+ * Implements the dialog with Socket.IO version 1.x
  *
- * Based on the work of Baptiste Clavié (@Taluu)
+ * Based on the work of Mathieu Lallemand (@lalmat)
  *
- * @auto ByeoungWook Kim <quddnr145@gmail.com>
+ * @author Baptiste Clavié <baptiste@wisembly.com>
  * @link https://tools.ietf.org/html/rfc6455#section-5.2 Websocket's RFC
  */
-class Version0X extends AbstractSocketIO
+class Version2X extends AbstractSocketIO
 {
-    const CLOSE         = 0;
-    const OPEN          = 1;
-    const HEARTBEAT     = 2;
-    const MESSAGE       = 3;
-    const JOIN_MESSAGE  = 4;
-    const EVENT         = 5;
-    const ACK           = 6;
-    const ERROR         = 7;
-    const NOOP          = 8;
-
-    const TRANSPORT_POLLING   = 'xhr-polling';
+    const TRANSPORT_POLLING   = 'polling';
     const TRANSPORT_WEBSOCKET = 'websocket';
 
     /** {@inheritDoc} */
@@ -83,7 +72,8 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
-        $this->write(static::CLOSE);
+        $this->write(EngineInterface::CLOSE);
+
         fclose($this->stream);
         $this->stream = null;
         $this->session = null;
@@ -93,7 +83,20 @@ class Version0X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
-        $this->write(static::EVENT, json_encode(['name' => $event, 'args' => $args]));
+        $namespace = $this->namespace;
+
+        if ('' !== $namespace) {
+            $namespace .= ',';
+        }
+
+        return $this->write(EngineInterface::MESSAGE, static::EVENT . $namespace . json_encode([$event, $args]));
+    }
+
+    /** {@inheritDoc} */
+    public function of($namespace) {
+        parent::of($namespace);
+
+        $this->write(EngineInterface::MESSAGE, static::CONNECT . $namespace);
     }
 
     /** {@inheritDoc} */
@@ -107,26 +110,19 @@ class Version0X extends AbstractSocketIO
             throw new InvalidArgumentException('Wrong message type when trying to write on the socket');
         }
 
-        $payload = new Encoder($code . '::' . $this->namespace . ':' . $message, Encoder::OPCODE_TEXT, true);
+        $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
         $bytes = fwrite($this->stream, (string) $payload);
 
         // wait a little bit of time after this message was sent
-        usleep($this->options['wait']);
+        usleep((int) $this->options['wait']);
 
         return $bytes;
     }
 
     /** {@inheritDoc} */
-    public function of($namespace) {
-        parent::of($namespace);
-
-        $this->write(static::OPEN);
-    }
-
-    /** {@inheritDoc} */
     public function getName()
     {
-        return 'SocketIO Version 0.X';
+        return 'SocketIO Version 1.X';
     }
 
     /** {@inheritDoc} */
@@ -134,8 +130,9 @@ class Version0X extends AbstractSocketIO
     {
         $defaults = parent::getDefaultOptions();
 
-        $defaults['protocol']  = 1;
-        $defaults['transport'] = static::TRANSPORT_WEBSOCKET;
+        $defaults['version']   = 3;
+        $defaults['use_b64']   = false;
+        $defaults['transport'] = static::TRANSPORT_POLLING;
 
         return $defaults;
     }
@@ -147,6 +144,14 @@ class Version0X extends AbstractSocketIO
             return;
         }
 
+        $query = ['use_b64'   => $this->options['use_b64'],
+                  'EIO'       => $this->options['version'],
+                  'transport' => $this->options['transport']];
+
+        if (isset($this->url['query'])) {
+            $query = array_replace($query, $this->url['query']);
+        }
+
         $context = $this->context;
 
         if (!isset($context[$this->url['secured'] ? 'ssl' : 'http'])) {
@@ -155,23 +160,16 @@ class Version0X extends AbstractSocketIO
 
         $context[$this->url['secured'] ? 'ssl' : 'http']['timeout'] = (float) $this->options['timeout'];
 
-        $url = sprintf('%s://%s:%d/%s/%d', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), $this->options['protocol']);
-
-        if (isset($this->url['query'])) {
-            $url .= '/?' . http_build_query($this->url['query']);
-        }
-
+        $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
         $result = @file_get_contents($url, false, stream_context_create($context));
 
         if (false === $result) {
             throw new ServerConnectionFailureException;
         }
 
-        $sess = explode(':', $result);
-        $decoded['sid'] = $sess[0];
-        $decoded['pingInterval'] = $sess[1];
-        $decoded['pingTimeout'] = $sess[2];
-        $decoded['upgrades'] = array_flip(explode(',', $sess[3]));
+	    $open_curly_at = strpos($result, '{');
+	    $todecode = substr($result, $open_curly_at, strrpos($result, '}')-$open_curly_at+1);
+        $decoded = json_decode($todecode, true);
 
         if (!in_array('websocket', $decoded['upgrades'])) {
             throw new UnsupportedTransportException('websocket');
@@ -191,16 +189,12 @@ class Version0X extends AbstractSocketIO
     /** Upgrades the transport to WebSocket */
     private function upgradeTransport()
     {
-        if (!array_key_exists('websocket', $this->session->upgrades)) {
-            return new UnsupportedTransportException('websocket');
-        }
+        $query = ['sid'       => $this->session->id,
+                  'EIO'       => $this->options['version'],
+                  'transport' => static::TRANSPORT_WEBSOCKET];
 
-        $url = sprintf('/%s/%d/%s/%s', trim($this->url['path'], '/'), $this->options['protocol'], $this->options['transport'], $this->session->id);
-        if (isset($this->url['query'])) {
-            $url .= '/?' . http_build_query($this->url['query']);
-        }
-
-        $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
+        $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
+        $key = base64_encode(random_bytes(16));
 
         $origin = '*';
         $headers = isset($this->context['headers']) ? (array) $this->context['headers'] : [] ;
@@ -215,8 +209,8 @@ class Version0X extends AbstractSocketIO
         }
 
         $request = "GET {$url} HTTP/1.1\r\n"
-                 . "Host: {$this->url['host']}\r\n"
-                 . "Upgrade: WebSocket\r\n"
+                 . "Host: {$this->url['host']}:{$this->url['port']}\r\n"
+                 . "Upgrade: websocket\r\n"
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
                  . "Sec-WebSocket-Version: 13\r\n"
@@ -237,6 +231,8 @@ class Version0X extends AbstractSocketIO
 
         // cleaning up the stream
         while ('' !== trim(fgets($this->stream)));
+
+        $this->write(EngineInterface::UPGRADE);
     }
 }
 

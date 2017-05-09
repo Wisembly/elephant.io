@@ -78,7 +78,7 @@ class Client
     /**
      * Reads a message from the socket
      *
-     * @return MessageInterface Message read from the socket
+     * @return string Message read from the socket
      */
     public function read()
     {
@@ -88,6 +88,9 @@ class Client
 
     /**
      * Emits a message through the engine
+     *
+     * @param string $event
+     * @param array  $args
      *
      * @return $this
      */
