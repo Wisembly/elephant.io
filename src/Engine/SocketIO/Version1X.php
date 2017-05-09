@@ -167,7 +167,9 @@ class Version1X extends AbstractSocketIO
             throw new ServerConnectionFailureException;
         }
 
-        $decoded = json_decode(substr($result, strpos($result, '{')), true);
+	    $open_curly_at = strpos($result, '{');
+	    $todecode = substr($result, $open_curly_at, strrpos($result, '}')-$open_curly_at+1);
+        $decoded = json_decode($todecode, true);
 
         if (!in_array('websocket', $decoded['upgrades'])) {
             throw new UnsupportedTransportException('websocket');
@@ -193,7 +195,7 @@ class Version1X extends AbstractSocketIO
                   'transport' => static::TRANSPORT_WEBSOCKET];
 
         $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
-        $key = base64_encode(sha1(uniqid(mt_rand(), true), true));
+        $key = base64_encode(random_bytes(20));
 
         $origin = '*';
         $headers = isset($this->context['headers']) ? (array) $this->context['headers'] : [] ;
@@ -208,7 +210,7 @@ class Version1X extends AbstractSocketIO
         }
 
         $request = "GET {$url} HTTP/1.1\r\n"
-                 . "Host: {$this->url['host']}\r\n"
+                 . "Host: {$this->url['host']}:{$this->url['port']}\r\n"
                  . "Upgrade: WebSocket\r\n"
                  . "Connection: Upgrade\r\n"
                  . "Sec-WebSocket-Key: {$key}\r\n"
@@ -234,7 +236,8 @@ class Version1X extends AbstractSocketIO
         $this->write(EngineInterface::UPGRADE);
 
         //remove message '40' from buffer, emmiting by socket.io after receiving EngineInterface::UPGRADE
-        $this->read();
+        if ($this->options['version'] === 2)
+            $this->read();
     }
 }
 
