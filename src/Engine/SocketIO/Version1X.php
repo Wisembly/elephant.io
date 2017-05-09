@@ -187,15 +187,17 @@ class Version1X extends AbstractSocketIO
     }
 
     /** Upgrades the transport to WebSocket */
-    private function upgradeTransport()
+    protected function upgradeTransport()
     {
         $query = ['sid'       => $this->session->id,
                   'EIO'       => $this->options['version'],
-                  'use_b64'   => $this->options['use_b64'],
                   'transport' => static::TRANSPORT_WEBSOCKET];
 
+	    if ($this->options['version'] === 2)
+	        $query['use_b64'] = $this->options['use_b64'];
+
         $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
-        $key = base64_encode(random_bytes(20));
+        $key = base64_encode(openssl_random_pseudo_bytes(16));
 
         $origin = '*';
         $headers = isset($this->context['headers']) ? (array) $this->context['headers'] : [] ;
