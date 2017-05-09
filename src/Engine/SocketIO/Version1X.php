@@ -199,13 +199,18 @@ class Version1X extends AbstractSocketIO
                   'EIO'       => $this->options['version'],
                   'transport' => static::TRANSPORT_WEBSOCKET];
 
-        if ($this->options['version'] === 2)
+        if ($this->options['version'] === 2) {
             $query['use_b64'] = $this->options['use_b64'];
+        }
 
         $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
+        
         $hash = sha1(uniqid(mt_rand(), true), true);
-        if ($this->options['version'] !== 2)
+        
+        if ($this->options['version'] !== 2) {
             $hash = substr($hash, 0, 16);
+        }
+        
         $key = base64_encode($hash);
 
         $origin = '*';
