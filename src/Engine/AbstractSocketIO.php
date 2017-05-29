@@ -117,7 +117,14 @@ abstract class AbstractSocketIO implements EngineInterface
          * opcode... We're not interested in them. Yet.
          * the second byte contains the mask bit and the payload's length
          */
+	    stream_set_blocking($this->stream, false);
         $data = fread($this->stream, 2);
+
+        if ($data == '')
+        {
+        	return '';
+        }
+
         $bytes = unpack('C*', $data);
 
         $mask = ($bytes[2] & 0b10000000) >> 7;
