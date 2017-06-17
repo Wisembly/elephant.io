@@ -160,6 +160,12 @@ class Version1X extends AbstractSocketIO
 
         $context[$this->url['secured'] ? 'ssl' : 'http']['timeout'] = (float) $this->options['timeout'];
 
+        // add customer headers
+        if (isset($this->options['headers'])) {
+            $headers = $context[$this->url['secured'] ? 'ssl' : 'http']['header'] ?: [];
+            $context[$this->url['secured'] ? 'ssl' : 'http']['header'] = array_merge($headers, $this->options['headers']);
+        }
+
         $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
         $result = @file_get_contents($url, false, stream_context_create($context));
 
@@ -204,13 +210,13 @@ class Version1X extends AbstractSocketIO
         }
 
         $url = sprintf('/%s/?%s', trim($this->url['path'], '/'), http_build_query($query));
-        
+
         $hash = sha1(uniqid(mt_rand(), true), true);
-        
+
         if ($this->options['version'] !== 2) {
             $hash = substr($hash, 0, 16);
         }
-        
+
         $key = base64_encode($hash);
 
         $origin = '*';
