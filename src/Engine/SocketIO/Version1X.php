@@ -159,6 +159,12 @@ class Version1X extends AbstractSocketIO
         }
 
         $context[$this->url['secured'] ? 'ssl' : 'http']['timeout'] = (float) $this->options['timeout'];
+        
+        // add customer headers
+        if(array_key_exists("headers", $this->options)){
+            $headers = $context['http']['header'] ?: [];
+            $context['http']['header'] = array_merge($headers, $this->options['headers']);
+        }
 
         $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
         $result = @file_get_contents($url, false, stream_context_create($context));
