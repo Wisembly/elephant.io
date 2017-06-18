@@ -162,8 +162,8 @@ class Version1X extends AbstractSocketIO
         
         // add customer headers
         if(array_key_exists("headers", $this->options)){
-            $headers = $context[$this->url['secured'] ? 'ssl' : 'http']['header'] ?: [];
-            $context[$this->url['secured'] ? 'ssl' : 'http']['header'] = array_merge($headers, $this->options['headers']);
+            $headers = $context['http']['header'] ?: [];
+            $context['http']['header'] = array_merge($headers, $this->options['headers']);
         }
 
         $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));
