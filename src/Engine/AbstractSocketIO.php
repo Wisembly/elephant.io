@@ -51,7 +51,7 @@ abstract class AbstractSocketIO implements EngineInterface
     protected $namespace = '';
 
     /** @var mixed[] Array of php stream context options */
-    protected $context;
+    protected $context = [];
 
     public function __construct($url, array $options = [])
     {
@@ -211,7 +211,7 @@ abstract class AbstractSocketIO implements EngineInterface
         if (!isset($server['port'])) {
             $server['port'] = 'https' === $server['scheme'] ? 443 : 80;
         }
-        
+
         if (!isset($server['path']) || $server['path']=='/') {
             $server['path'] = 'socket.io';
         }

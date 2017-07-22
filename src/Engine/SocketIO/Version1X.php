@@ -47,11 +47,19 @@ class Version1X extends AbstractSocketIO
 
         $this->handshake();
 
+        $protocol = 'http';
         $errors = [null, null];
         $host   = sprintf('%s:%d', $this->url['host'], $this->url['port']);
 
         if (true === $this->url['secured']) {
+            $protocol = 'ssl';
             $host = 'ssl://' . $host;
+        }
+
+        // add custom headers
+        if (isset($this->options['headers'])) {
+            $headers = isset($this->context[$protocol]['header']) ? $this->context[$protocol]['header'] : [];
+            $this->context[$protocol]['header'] = array_merge($headers, $this->options['headers']);
         }
 
         $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->context));
