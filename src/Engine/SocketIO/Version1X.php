@@ -54,6 +54,15 @@ class Version1X extends AbstractSocketIO
             $host = 'ssl://' . $host;
         }
 
+        // add custom headers
+        if(!empty($this->options['headers'])){
+            if(empty($this->context)) $this->context = [];
+
+            $protocol = true === $this->url['secured'] ? "ssl" : "http";
+            $headers = !empty($this->context[$protocol]['header']) ? $this->context[$protocol]['header'] : [];
+            $this->context[$protocol]['header'] = array_merge($headers, $this->options['headers']);
+        }
+
         $this->stream = stream_socket_client($host, $errors[0], $errors[1], $this->options['timeout'], STREAM_CLIENT_CONNECT, stream_context_create($this->context));
 
         if (!is_resource($this->stream)) {
@@ -153,17 +162,18 @@ class Version1X extends AbstractSocketIO
         }
 
         $context = $this->context;
+        $protocol = $this->url['secured'] ? 'ssl' : 'http';
 
         if (!isset($context[$this->url['secured'] ? 'ssl' : 'http'])) {
-            $context[$this->url['secured'] ? 'ssl' : 'http'] = [];
+            $context[$protocol] = [];
         }
 
-        $context[$this->url['secured'] ? 'ssl' : 'http']['timeout'] = (float) $this->options['timeout'];
+        $context[$protocol]['timeout'] = (float) $this->options['timeout'];
         
-        // add customer headers
-        if(array_key_exists("headers", $this->options)){
-            $headers = $context[$this->url['secured'] ? 'ssl' : 'http']['header'] ?: [];
-            $context[$this->url['secured'] ? 'ssl' : 'http']['header'] = array_merge($headers, $this->options['headers']);
+        // add custom headers
+        if(!empty($this->options['headers'])){
+            $headers = !empty($context[$protocol]['header']) ? $context[$protocol]['header'] : [];
+            $context[$protocol]['header'] = array_merge($headers, $this->options['headers']);
         }
 
         $url    = sprintf('%s://%s:%d/%s/?%s', $this->url['scheme'], $this->url['host'], $this->url['port'], trim($this->url['path'], '/'), http_build_query($query));

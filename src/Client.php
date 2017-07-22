@@ -105,7 +105,7 @@ class Client
     /**
      * Sets the namespace for the next messages
      *
-     * @param string namespace the name of the namespace
+     * @param string $namespace the name of the namespace
      * @return $this
      */
     public function of($namespace)
