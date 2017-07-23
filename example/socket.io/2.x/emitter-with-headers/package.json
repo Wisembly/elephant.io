@@ -1,0 +1,12 @@
+{
+    "name": "elephantIO_example_emitter_with_headers",
+    "version": "1.0.0",
+    "main": "server.js",
+    "scripts": {
+        "start": "supervisor --debug server.js"
+    },
+    "dependencies": {
+        "socket.io": "~2",
+        "winston": "*"
+    }
+}
