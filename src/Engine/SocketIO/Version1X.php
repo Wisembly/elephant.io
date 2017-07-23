@@ -56,8 +56,6 @@ class Version1X extends AbstractSocketIO
 
         // add custom headers
         if(!empty($this->options['headers'])){
-            if(empty($this->context)) $this->context = [];
-
             $protocol = true === $this->url['secured'] ? "ssl" : "http";
             $headers = !empty($this->context[$protocol]['header']) ? $this->context[$protocol]['header'] : [];
             $this->context[$protocol]['header'] = array_merge($headers, $this->options['headers']);
@@ -164,14 +162,14 @@ class Version1X extends AbstractSocketIO
         $context = $this->context;
         $protocol = $this->url['secured'] ? 'ssl' : 'http';
 
-        if (!isset($context[$this->url['secured'] ? 'ssl' : 'http'])) {
+        if (!isset($context[$protocol])) {
             $context[$protocol] = [];
         }
 
         $context[$protocol]['timeout'] = (float) $this->options['timeout'];
         
         // add custom headers
-        if(!empty($this->options['headers'])){
+        if (!empty($this->options['headers'])) {
             $headers = !empty($context[$protocol]['header']) ? $context[$protocol]['header'] : [];
             $context[$protocol]['header'] = array_merge($headers, $this->options['headers']);
         }

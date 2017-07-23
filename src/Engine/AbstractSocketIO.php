@@ -60,6 +60,8 @@ abstract class AbstractSocketIO implements EngineInterface
 
         if (isset($this->options['context'])) {
             $this->context = &$this->options['context'];
+        } else {
+            $this->context = [];
         }
     }
 
