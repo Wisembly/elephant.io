@@ -56,11 +56,13 @@ abstract class AbstractSocketIO implements EngineInterface
     public function __construct($url, array $options = [])
     {
         $this->url = $this->parseUrl($url);
-        $this->options = array_replace($this->getDefaultOptions(), $options);
 
-        if (isset($this->options['context'])) {
-            $this->context = &$this->options['context'];
+        if (isset($options['context'])) {
+            $this->context = $options['context'];
+            unset($options['context']);
         }
+
+        $this->options = array_replace($this->getDefaultOptions(), $options);
     }
 
     /** {@inheritDoc} */
@@ -233,10 +235,10 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function getDefaultOptions()
     {
-        return ['context'   => [],
-                'debug'     => false,
-                'wait'      => 100*1000,
-                'timeout'   => ini_get("default_socket_timeout")];
+        return [
+            'debug' => false,
+            'wait' => 100*1000,
+            'timeout' => ini_get("default_socket_timeout")
+        ];
     }
 }
-
