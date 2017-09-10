@@ -11,20 +11,6 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use DomainException;
-use InvalidArgumentException;
-use UnexpectedValueException;
-
-use Psr\Log\LoggerInterface;
-
-use ElephantIO\EngineInterface;
-use ElephantIO\Payload\Encoder;
-use ElephantIO\Engine\AbstractSocketIO;
-
-use ElephantIO\Exception\SocketException;
-use ElephantIO\Exception\UnsupportedTransportException;
-use ElephantIO\Exception\ServerConnectionFailureException;
-
 /**
  * Implements the dialog with Socket.IO version 2.x
  *
