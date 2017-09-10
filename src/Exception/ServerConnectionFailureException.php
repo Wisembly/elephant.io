@@ -16,9 +16,19 @@ use RuntimeException;
 
 class ServerConnectionFailureException extends RuntimeException
 {
-    public function __construct(Exception $previous = null)
+    /** @var string php error message */
+    private $errorMessage;
+
+    public function __construct($errorMessage, Exception $previous = null)
     {
         parent::__construct('An error occurred while trying to establish a connection to the server', 0, $previous);
+
+        $this->errorMessage = $errorMessage;
+    }
+
+    public function getErrorMessage()
+    {
+        return $this->errorMessage;
     }
 }
 
