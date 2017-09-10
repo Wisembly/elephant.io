@@ -177,7 +177,14 @@ class Version1X extends AbstractSocketIO
         $result = @file_get_contents($url, false, stream_context_create($context));
 
         if (false === $result) {
-            throw new ServerConnectionFailureException;
+            $message = null;
+            $error = error_get_last();
+
+            if (null !== $error && false !== strpos($error['message'], 'file_get_contents()')) {
+                $message = $error['message'];
+            }
+
+            throw new ServerConnectionFailureException($message);
         }
 
         $open_curly_at = strpos($result, '{');
