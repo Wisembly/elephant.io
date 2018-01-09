@@ -59,8 +59,8 @@ abstract class AbstractPayload
     protected function maskData($data)
     {
         $masked = '';
-        $data   = str_split($data);
-        $key    = str_split($this->maskKey);
+        $data   = \str_split($data);
+        $key    = \str_split($this->maskKey);
 
         foreach ($data as $i => $letter) {
             $masked .= $letter ^ $key[$i % 4];

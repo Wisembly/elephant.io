@@ -36,7 +36,7 @@ class Session
     {
         $this->id        = $id;
         $this->upgrades  = $upgrades;
-        $this->heartbeat = time();
+        $this->heartbeat = \time();
 
         $this->timeouts  = ['timeout'  => $timeout,
                             'interval' => $interval];
@@ -52,7 +52,7 @@ class Session
     {
         static $list = ['id', 'upgrades'];
 
-        if (!in_array($prop, $list)) {
+        if (!\in_array($prop, $list)) {
             throw new InvalidArgumentException(sprintf('Unknown property "%s" for the Session object. Only the following are availables : ["%s"]', $prop, implode('", "', $list)));
         }
 
@@ -66,8 +66,8 @@ class Session
      */
     public function needsHeartbeat()
     {
-        if (0 < $this->timeouts['interval'] && time() > ($this->timeouts['interval'] + $this->heartbeat - 5)) {
-            $this->heartbeat = time();
+        if (0 < $this->timeouts['interval'] && \time() > ($this->timeouts['interval'] + $this->heartbeat - 5)) {
+            $this->heartbeat = \time();
 
             return true;
         }
