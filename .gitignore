@@ -2,3 +2,4 @@ bin
 composer.lock
 vendor
 node_modules
+.idea/
