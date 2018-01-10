@@ -41,7 +41,7 @@ class Decoder extends AbstractPayload implements Countable
             return;
         }
 
-        $length = count($this);
+        $length = \count($this);
 
         // if ($payload !== null) and ($payload packet error)?
         // invalid websocket packet data or not (text, binary opCode)
@@ -49,7 +49,7 @@ class Decoder extends AbstractPayload implements Countable
             return;
         }
 
-        $payload = array_map('ord', str_split($this->payload));
+        $payload = \array_map('ord', \str_split($this->payload));
 
         $this->fin = ($payload[0] >> 0b111);
 
@@ -66,14 +66,14 @@ class Decoder extends AbstractPayload implements Countable
             $payloadOffset = (0xFFFF < $length && 0xFFFFFFFF >= $length) ? 6 : 4;
         }
 
-        $payload = implode('', array_map('chr', $payload));
+        $payload = \implode('', \array_map('chr', $payload));
 
         if (true === $this->mask) {
-            $this->maskKey  = substr($payload, $payloadOffset, 4);
+            $this->maskKey  = \substr($payload, $payloadOffset, 4);
             $payloadOffset += 4;
         }
 
-        $data = substr($payload, $payloadOffset, $length);
+        $data = \substr($payload, $payloadOffset, $length);
 
         if (true === $this->mask) {
             $data = $this->maskData($data);
@@ -95,8 +95,8 @@ class Decoder extends AbstractPayload implements Countable
         $length = ord($this->payload[1]) & 0x7F;
 
         if ($length == 126 || $length == 127) {
-            $length = unpack('H*', substr($this->payload, 2, ($length == 126 ? 2 : 4)));
-            $length = hexdec($length[1]);
+            $length = \unpack('H*', \substr($this->payload, 2, ($length == 126 ? 2 : 4)));
+            $length = \hexdec($length[1]);
         }
 
         return $this->length = $length;

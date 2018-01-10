@@ -17,7 +17,15 @@ class SocketException extends RuntimeException
 {
     public function __construct($errno, $error, \Exception $previous = null)
     {
-        parent::__construct(sprintf('There was an error while attempting to open a connection to the socket (Err #%d : %s)', $errno, $error), $errno, $previous);
+        parent::__construct(
+            \sprintf(
+                'There was an error while attempting to open a connection to the socket (Err #%d : %s)',
+                $errno,
+                $error
+            ),
+            $errno,
+            $previous
+        );
     }
 }
 

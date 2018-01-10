@@ -17,7 +17,11 @@
  {
      public function __construct($transport, \Exception $previous = null)
      {
-         parent::__construct(sprintf('This server does not support the %s transport, aborting', $transport), 0, $previous);
+         parent::__construct(
+             \sprintf('This server does not support the %s transport, aborting', $transport),
+             0,
+             $previous
+         );
      }
  }
 

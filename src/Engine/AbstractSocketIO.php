@@ -62,7 +62,7 @@ abstract class AbstractSocketIO implements EngineInterface
             unset($options['context']);
         }
 
-        $this->options = array_replace($this->getDefaultOptions(), $options);
+        $this->options = \array_replace($this->getDefaultOptions(), $options);
     }
 
     /** {@inheritDoc} */
@@ -110,7 +110,7 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     public function read()
     {
-        if (!is_resource($this->stream)) {
+        if (!\is_resource($this->stream)) {
             return;
         }
 
@@ -119,8 +119,8 @@ abstract class AbstractSocketIO implements EngineInterface
          * opcode... We're not interested in them. Yet.
          * the second byte contains the mask bit and the payload's length
          */
-        $data = fread($this->stream, 2);
-        $bytes = unpack('C*', $data);
+        $data = \fread($this->stream, 2);
+        $bytes = \unpack('C*', $data);
 
         $mask = ($bytes[2] & 0b10000000) >> 7;
         $length = $bytes[2] & 0b01111111;
@@ -141,8 +141,8 @@ abstract class AbstractSocketIO implements EngineInterface
             break;
 
             case 0x7E: // 126
-                $data .= $bytes = fread($this->stream, 2);
-                $bytes = unpack('n', $bytes);
+                $data .= $bytes = \fread($this->stream, 2);
+                $bytes = \unpack('n', $bytes);
 
                 if (empty($bytes[1])) {
                     throw new RuntimeException('Invalid extended packet len');
@@ -163,21 +163,21 @@ abstract class AbstractSocketIO implements EngineInterface
                  *
                  * {@link http://stackoverflow.com/questions/14405751/pack-and-unpack-64-bit-integer}
                  */
-                $data .= $bytes = fread($this->stream, 8);
-                list($left, $right) = array_values(unpack('N2', $bytes));
+                $data .= $bytes = \fread($this->stream, 8);
+                list($left, $right) = \array_values(\unpack('N2', $bytes));
                 $length = $left << 32 | $right;
             break;
         }
 
         // incorporate the mask key if the mask bit is 1
         if (true === $mask) {
-            $data .= fread($this->stream, 4);
+            $data .= \fread($this->stream, 4);
         }
 
         // Split the packet in case of the length > 16kb
-        while ($length > 0 && $buffer = fread($this->stream, $length)) {
+        while ($length > 0 && $buffer = \fread($this->stream, $length)) {
             $data   .= $buffer;
-            $length -= strlen($buffer);
+            $length -= \strlen($buffer);
         }
 
         // decode the payload
@@ -199,13 +199,13 @@ abstract class AbstractSocketIO implements EngineInterface
      */
     protected function parseUrl($url)
     {
-        $parsed = parse_url($url);
+        $parsed = \parse_url($url);
 
         if (false === $parsed) {
             throw new MalformedUrlException($url);
         }
 
-        $server = array_replace(['scheme' => 'http',
+        $server = \array_replace(['scheme' => 'http',
                                  'host'   => 'localhost',
                                  'query'  => []
                                 ], $parsed);
@@ -218,8 +218,8 @@ abstract class AbstractSocketIO implements EngineInterface
             $server['path'] = 'socket.io';
         }
 
-        if (!is_array($server['query'])) {
-            parse_str($server['query'], $query);
+        if (!\is_array($server['query'])) {
+            \parse_str($server['query'], $query);
             $server['query'] = $query;
         }
 
@@ -238,7 +238,7 @@ abstract class AbstractSocketIO implements EngineInterface
         return [
             'debug' => false,
             'wait' => 100*1000,
-            'timeout' => ini_get("default_socket_timeout")
+            'timeout' => \ini_get("default_socket_timeout")
         ];
     }
 }
