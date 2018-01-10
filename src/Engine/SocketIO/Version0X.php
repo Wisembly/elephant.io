@@ -25,7 +25,6 @@ use ElephantIO\Exception\SocketException;
 use ElephantIO\Exception\UnsupportedTransportException;
 use ElephantIO\Exception\ServerConnectionFailureException;
 
-
 /**
  * Implements the dialog with Socket.IO version 0.x
  *
@@ -132,7 +131,8 @@ class Version0X extends AbstractSocketIO
     }
 
     /** {@inheritDoc} */
-    public function of($namespace) {
+    public function of($namespace)
+    {
         parent::of($namespace);
 
         $this->write(static::OPEN);
@@ -280,11 +280,10 @@ class Version0X extends AbstractSocketIO
         $result = \fread($this->stream, 12);
 
         if ('HTTP/1.1 101' !== $result) {
-            throw new UnexpectedValueException(sprintf('The server returned an unexpected value. Expected "HTTP/1.1 101", had "%s"', $result));
+            throw new UnexpectedValueException(\sprintf('The server returned an unexpected value. Expected "HTTP/1.1 101", had "%s"', $result));
         }
 
         // cleaning up the stream
         while ('' !== \trim(\fgets($this->stream)));
     }
 }
-

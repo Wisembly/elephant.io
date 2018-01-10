@@ -41,7 +41,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function connect()
     {
-        if (is_resource($this->stream)) {
+        if (\is_resource($this->stream)) {
             return;
         }
 
@@ -108,7 +108,8 @@ class Version1X extends AbstractSocketIO
     }
 
     /** {@inheritDoc} */
-    public function of($namespace) {
+    public function of($namespace)
+    {
         parent::of($namespace);
 
         $this->write(EngineInterface::MESSAGE, static::CONNECT . $namespace);
@@ -294,8 +295,8 @@ class Version1X extends AbstractSocketIO
         $this->write(EngineInterface::UPGRADE);
 
         //remove message '40' from buffer, emmiting by socket.io after receiving EngineInterface::UPGRADE
-        if ($this->options['version'] === 2)
+        if ($this->options['version'] === 2) {
             $this->read();
+        }
     }
 }
-

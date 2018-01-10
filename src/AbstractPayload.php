@@ -69,4 +69,3 @@ abstract class AbstractPayload
         return $masked;
     }
 }
-

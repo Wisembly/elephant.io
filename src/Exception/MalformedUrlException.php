@@ -21,4 +21,3 @@ class MalformedUrlException extends InvalidArgumentException
         parent::__construct(\sprintf('The url "%s" seems to be malformed', $url), 0, $previous);
     }
 }
-

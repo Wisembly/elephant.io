@@ -11,7 +11,7 @@
 
  namespace ElephantIO\Exception;
 
- use RuntimeException;
+use RuntimeException;
 
  class UnsupportedTransportException extends RuntimeException
  {
@@ -24,4 +24,3 @@
          );
      }
  }
-

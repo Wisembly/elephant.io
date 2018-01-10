@@ -15,7 +15,6 @@ use BadMethodCallException;
 
 use ElephantIO\EngineInterface;
 
-
 class UnsupportedActionException extends BadMethodCallException
 {
     public function __construct(EngineInterface $engine, $action, Exception $previous = null)
@@ -27,4 +26,3 @@ class UnsupportedActionException extends BadMethodCallException
         );
     }
 }
-

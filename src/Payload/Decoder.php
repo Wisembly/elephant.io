@@ -92,7 +92,7 @@ class Decoder extends AbstractPayload implements Countable
             return $this->length;
         }
 
-        $length = ord($this->payload[1]) & 0x7F;
+        $length = \ord($this->payload[1]) & 0x7F;
 
         if ($length == 126 || $length == 127) {
             $length = \unpack('H*', \substr($this->payload, 2, ($length == 126 ? 2 : 4)));
@@ -109,4 +109,3 @@ class Decoder extends AbstractPayload implements Countable
         return $this->data ?: '';
     }
 }
-

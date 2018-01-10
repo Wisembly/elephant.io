@@ -28,4 +28,3 @@ class SocketException extends RuntimeException
         );
     }
 }
-

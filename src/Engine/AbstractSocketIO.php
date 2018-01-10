@@ -84,7 +84,8 @@ abstract class AbstractSocketIO implements EngineInterface
     }
 
     /** {@inheritDoc} */
-    public function of($namespace) {
+    public function of($namespace)
+    {
         $this->namespace = $namespace;
     }
 
