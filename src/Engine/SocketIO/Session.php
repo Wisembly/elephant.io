@@ -42,18 +42,18 @@ class Session
                             'interval' => $interval];
     }
 
-	/**
-	 * The property should not be modified, hence the private accessibility on them
-	 *
-	 * @param string $prop
-	 * @return mixed
-	 */
+    /**
+     * The property should not be modified, hence the private accessibility on them
+     *
+     * @param string $prop
+     * @return mixed
+     */
     public function __get($prop)
     {
         static $list = ['id', 'upgrades'];
 
         if (!\in_array($prop, $list)) {
-            throw new InvalidArgumentException(sprintf('Unknown property "%s" for the Session object. Only the following are availables : ["%s"]', $prop, implode('", "', $list)));
+            throw new InvalidArgumentException(\sprintf('Unknown property "%s" for the Session object. Only the following are availables : ["%s"]', $prop, \implode('", "', $list)));
         }
 
         return $this->$prop;
@@ -75,4 +75,3 @@ class Session
         return false;
     }
 }
-

@@ -1,0 +1,15 @@
+preset: PSR2
+
+risky: true
+
+enabled:
+  - align_comments
+  - native_function_casing
+  - native_function_invocation
+  - short_array_syntax
+
+finder:
+  name:
+    - "*.php"
+  path:
+    - "src"

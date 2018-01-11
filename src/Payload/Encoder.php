@@ -86,4 +86,3 @@ class Encoder extends AbstractPayload
         return $this->payload;
     }
 }
-
