@@ -133,7 +133,7 @@ class Version1X extends AbstractSocketIO
             throw new \Exception("Message was not delivered");
         }
 
-		// wait a little bit of time after this message was sent
+        // wait a little bit of time after this message was sent
         \usleep((int) $this->options['wait']);
 
         return $bytes;
