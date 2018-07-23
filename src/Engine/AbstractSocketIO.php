@@ -123,6 +123,10 @@ abstract class AbstractSocketIO implements EngineInterface
         $data = \fread($this->stream, 2);
         $bytes = \unpack('C*', $data);
 
+        if (empty($bytes[2])){
+            return;
+        }
+
         $mask = ($bytes[2] & 0b10000000) >> 7;
         $length = $bytes[2] & 0b01111111;
 
@@ -133,7 +137,7 @@ abstract class AbstractSocketIO implements EngineInterface
          * - if the length is 126, it means that it is coded over the next 2 bytes ;
          * - if the length is 127, it means that it is coded over the next 8 bytes.
          *
-         * But,here's the trick : we cannot interpret a length over 127 if the
+         * But, here's the trick : we cannot interpret a length over 127 if the
          * system does not support 64bits integers (such as Windows, or 32bits
          * processors architectures).
          */
