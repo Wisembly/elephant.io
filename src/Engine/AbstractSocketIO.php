@@ -123,7 +123,9 @@ abstract class AbstractSocketIO implements EngineInterface
         $data = \fread($this->stream, 2);
         $bytes = \unpack('C*', $data);
 
-        if(empty($bytes[2])) return;
+        if(empty($bytes[2])){
+			return;
+		}
         $mask = ($bytes[2] & 0b10000000) >> 7;
         $length = $bytes[2] & 0b01111111;
 
