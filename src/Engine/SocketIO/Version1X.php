@@ -129,9 +129,9 @@ class Version1X extends AbstractSocketIO
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
         $bytes = @\fwrite($this->stream, (string) $payload);
 
-		if($bytes == false){
-			throw new \Exception("Message was not delivered");
-		}
+	if($bytes == false) {
+		throw new \Exception("Message was not delivered");
+	}
 
 		// wait a little bit of time after this message was sent
         \usleep((int) $this->options['wait']);
