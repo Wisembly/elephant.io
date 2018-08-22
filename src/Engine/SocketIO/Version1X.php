@@ -225,8 +225,8 @@ class Version1X extends AbstractSocketIO
 
         $this->session = new Session(
             $decoded['sid'],
-            $decoded['pingInterval'],
-            $decoded['pingTimeout'],
+            $decoded['pingInterval'] / 1000,
+            $decoded['pingTimeout'] / 1000,
             $decoded['upgrades']
         );
     }

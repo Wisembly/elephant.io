@@ -26,7 +26,7 @@ class Session
     /** @var integer session's last heartbeat */
     private $heartbeat;
 
-    /** @var integer[] session's and heartbeat's timeouts */
+    /** @var float[] session's and heartbeat's timeouts */
     private $timeouts;
 
     /** @var string[] supported upgrades */
@@ -36,10 +36,10 @@ class Session
     {
         $this->id        = $id;
         $this->upgrades  = $upgrades;
-        $this->heartbeat = \time();
+        $this->heartbeat = \microtime(true);
 
-        $this->timeouts  = ['timeout'  => $timeout,
-                            'interval' => $interval];
+        $this->timeouts  = ['timeout'  => (float)$timeout,
+                            'interval' => (float)$interval];
     }
 
     /**
@@ -66,8 +66,8 @@ class Session
      */
     public function needsHeartbeat()
     {
-        if (0 < $this->timeouts['interval'] && \time() > ($this->timeouts['interval'] + $this->heartbeat - 5)) {
-            $this->heartbeat = \time();
+        if (0 < $this->timeouts['interval'] && \microtime(true) > ($this->timeouts['interval'] + $this->heartbeat - 5)) {
+            $this->heartbeat = \microtime(true);
 
             return true;
         }
