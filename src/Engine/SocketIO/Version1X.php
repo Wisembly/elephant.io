@@ -11,11 +11,8 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use DomainException;
 use InvalidArgumentException;
 use UnexpectedValueException;
-
-use Psr\Log\LoggerInterface;
 
 use ElephantIO\EngineInterface;
 use ElephantIO\Payload\Encoder;
@@ -37,6 +34,12 @@ class Version1X extends AbstractSocketIO
 {
     const TRANSPORT_POLLING   = 'polling';
     const TRANSPORT_WEBSOCKET = 'websocket';
+
+    /**
+     * Keep connection alive
+     * @var bool
+     */
+    protected $keepAlive = false;
 
     /** {@inheritDoc} */
     public function connect()
@@ -98,6 +101,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
+        $this->ping();
         $namespace = $this->namespace;
 
         if ('' !== $namespace) {
@@ -110,6 +114,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function of($namespace)
     {
+        $this->ping();
         parent::of($namespace);
 
         $this->write(EngineInterface::MESSAGE, static::CONNECT . $namespace);
@@ -301,6 +306,35 @@ class Version1X extends AbstractSocketIO
         //remove message '40' from buffer, emmiting by socket.io after receiving EngineInterface::UPGRADE
         if ($this->options['version'] === 2) {
             $this->read();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function keepAlive()
+    {
+        $this->keepAlive = true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function read()
+    {
+       $message = parent::read();
+       $this->ping();
+
+       return $message;
+    }
+
+    /**
+     * Send Ping packet
+     */
+    protected function ping()
+    {
+        if ($this->keepAlive && $this->session->needsHeartbeat()) {
+            $this->write(static::PING);
         }
     }
 }
