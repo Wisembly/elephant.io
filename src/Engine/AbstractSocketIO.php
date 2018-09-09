@@ -74,7 +74,6 @@ abstract class AbstractSocketIO implements EngineInterface
     /** {@inheritDoc} */
     public function keepAlive()
     {
-        throw new UnsupportedActionException($this, 'keepAlive');
     }
 
     /** {@inheritDoc} */
@@ -115,6 +114,7 @@ abstract class AbstractSocketIO implements EngineInterface
             return;
         }
 
+        $this->keepAlive();
         /*
          * The first byte contains the FIN bit, the reserved bits, and the
          * opcode... We're not interested in them. Yet.

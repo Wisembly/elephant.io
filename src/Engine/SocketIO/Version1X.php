@@ -11,11 +11,8 @@
 
 namespace ElephantIO\Engine\SocketIO;
 
-use DomainException;
 use InvalidArgumentException;
 use UnexpectedValueException;
-
-use Psr\Log\LoggerInterface;
 
 use ElephantIO\EngineInterface;
 use ElephantIO\Payload\Encoder;
@@ -98,6 +95,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function emit($event, array $args)
     {
+        $this->keepAlive();
         $namespace = $this->namespace;
 
         if ('' !== $namespace) {
@@ -110,6 +108,7 @@ class Version1X extends AbstractSocketIO
     /** {@inheritDoc} */
     public function of($namespace)
     {
+        $this->keepAlive();
         parent::of($namespace);
 
         $this->write(EngineInterface::MESSAGE, static::CONNECT . $namespace);
@@ -225,8 +224,8 @@ class Version1X extends AbstractSocketIO
 
         $this->session = new Session(
             $decoded['sid'],
-            $decoded['pingInterval'],
-            $decoded['pingTimeout'],
+            $decoded['pingInterval'] / 1000,
+            $decoded['pingTimeout'] / 1000,
             $decoded['upgrades']
         );
     }
@@ -301,6 +300,16 @@ class Version1X extends AbstractSocketIO
         //remove message '40' from buffer, emmiting by socket.io after receiving EngineInterface::UPGRADE
         if ($this->options['version'] === 2) {
             $this->read();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function keepAlive()
+    {
+        if ($this->session->needsHeartbeat()) {
+            $this->write(static::PING);
         }
     }
 }
