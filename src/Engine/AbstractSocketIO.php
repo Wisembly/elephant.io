@@ -111,11 +111,16 @@ abstract class AbstractSocketIO implements EngineInterface
     protected function readBytes($bytes)
     {
         $data = '';
+        $chunk = null;
         while ($bytes > 0 && false !== ($chunk = \fread($this->stream, $bytes))) {
             $bytes -= \strlen($chunk);
             $data .= $chunk;
         }
-        return $chunk === false ? false : $data;
+
+        if (false === $chunk) {
+            throw new RuntimeException('Could not read from stream');
+        }
+        return $data;
     }
 
     /**
