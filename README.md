@@ -15,9 +15,9 @@ Elephant.io
 ()\___) |/   \_/";          !    the MIT License.
  \._____.-~\  .  ~\.      ./
             Y_ Y_. "vr"~  T      Built-in Engines :
-            (  (    |L    j      - Socket.io 1.x
-            [nn[nn..][nn..]      - Socket.io 0.x (courtesy of @kbu1564)
-          ~~~~~~~~~~~~~~~~~~~
+            (  (    |L    j      - Socket.io 2.x
+            [nn[nn..][nn..]      - Socket.io 1.x
+          ~~~~~~~~~~~~~~~~~~~    - Socket.io 0.x (courtesy of @kbu1564)
 ```
 
 NOTICE
