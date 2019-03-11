@@ -103,6 +103,27 @@ abstract class AbstractSocketIO implements EngineInterface
     }
 
     /**
+     * Network safe \fread wrapper
+     *
+     * @param integer $bytes
+     * @return bool|string
+     */
+    protected function readBytes($bytes)
+    {
+        $data = '';
+        $chunk = null;
+        while ($bytes > 0 && false !== ($chunk = \fread($this->stream, $bytes))) {
+            $bytes -= \strlen($chunk);
+            $data .= $chunk;
+        }
+
+        if (false === $chunk) {
+            throw new RuntimeException('Could not read from stream');
+        }
+        return $data;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * Be careful, this method may hang your script, as we're not in a non
@@ -120,7 +141,7 @@ abstract class AbstractSocketIO implements EngineInterface
          * opcode... We're not interested in them. Yet.
          * the second byte contains the mask bit and the payload's length
          */
-        $data = \fread($this->stream, 2);
+        $data = $this->readBytes(2);
         $bytes = \unpack('C*', $data);
 
         if (empty($bytes[2])){
@@ -146,7 +167,7 @@ abstract class AbstractSocketIO implements EngineInterface
             break;
 
             case 0x7E: // 126
-                $data .= $bytes = \fread($this->stream, 2);
+                $data .= $bytes = $this->readBytes(2);
                 $bytes = \unpack('n', $bytes);
 
                 if (empty($bytes[1])) {
@@ -168,7 +189,7 @@ abstract class AbstractSocketIO implements EngineInterface
                  *
                  * {@link http://stackoverflow.com/questions/14405751/pack-and-unpack-64-bit-integer}
                  */
-                $data .= $bytes = \fread($this->stream, 8);
+                $data .= $bytes = $this->readBytes(8);
                 list($left, $right) = \array_values(\unpack('N2', $bytes));
                 $length = $left << 32 | $right;
             break;
@@ -176,14 +197,10 @@ abstract class AbstractSocketIO implements EngineInterface
 
         // incorporate the mask key if the mask bit is 1
         if (true === $mask) {
-            $data .= \fread($this->stream, 4);
+            $data .= $this->readBytes(4);
         }
 
-        // Split the packet in case of the length > 16kb
-        while ($length > 0 && $buffer = \fread($this->stream, $length)) {
-            $data   .= $buffer;
-            $length -= \strlen($buffer);
-        }
+        $data .= $this->readBytes($length);
 
         // decode the payload
         return (string) new Decoder($data);
@@ -242,7 +259,7 @@ abstract class AbstractSocketIO implements EngineInterface
     {
         return [
             'debug' => false,
-            'wait' => 100*1000,
+            'wait' => 0,
             'timeout' => \ini_get("default_socket_timeout")
         ];
     }

@@ -284,7 +284,7 @@ class Version1X extends AbstractSocketIO
         $request .= "\r\n";
 
         \fwrite($this->stream, $request);
-        $result = \fread($this->stream, 12);
+        $result = $this->readBytes(12);
 
         if ('HTTP/1.1 101' !== $result) {
             throw new UnexpectedValueException(
