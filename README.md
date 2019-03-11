@@ -17,7 +17,7 @@ Elephant.io
             Y_ Y_. "vr"~  T      Built-in Engines :
             (  (    |L    j      - Socket.io 2.x
             [nn[nn..][nn..]      - Socket.io 1.x
-          ~~~~~~~~~~~~~~~~~~~    - Socker.io 0.x (courtesy of @kbu1564)
+          ~~~~~~~~~~~~~~~~~~~    - Socket.io 0.x (courtesy of @kbu1564)
 ```
 
 NOTICE
