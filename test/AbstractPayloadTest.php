@@ -11,12 +11,13 @@
 
 namespace ElephantIO;
 
-use ReflectionMethod,
-    ReflectionProperty;
+use ReflectionMethod;
 
-use PHPUnit_Framework_TestCase;
+use ReflectionProperty;
 
-class AbstractPayloadTest extends PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class AbstractPayloadTest extends TestCase
 {
     public function testMaskData()
     {

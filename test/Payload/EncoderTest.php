@@ -13,9 +13,9 @@ namespace ElephantIO\Payload;
 
 use ReflectionProperty;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
-class EncoderTest extends PHPUnit_Framework_TestCase
+class EncoderTest extends TestCase
 {
     /** @dataProvider providerShortPayload */
     public function testShortPayload($maskKey, $expected)
