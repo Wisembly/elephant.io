@@ -180,8 +180,8 @@ class Version1X extends AbstractSocketIO
 
         // add customer headers
         if (isset($this->options['headers'])) {
-            $headers = isset($context[$protocol]['header']) ? $context[$protocol]['header'] : [];
-            $context[$protocol]['header'] = \array_merge($headers, $this->options['headers']);
+            $headers = isset($context['http']['header']) ? $context['http']['header'] : [];
+            $context['http']['header'] = array_merge($headers, $this->options['headers']);
         }
 
         $url    = \sprintf(
