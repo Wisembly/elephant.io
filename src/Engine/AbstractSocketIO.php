@@ -114,7 +114,7 @@ abstract class AbstractSocketIO implements EngineInterface
         $chunk = null;
         while ($bytes > 0 && false !== ($chunk = \fread($this->stream, $bytes))) {
             // if endless loop, break
-            if (strlen($chunk) == 0) {
+            if (\strlen($chunk) === 0) {
                 $stream = stream_get_meta_data($this->stream);
 
                 if (isset($stream['timed_out']) && $stream['timed_out'] == true) {
