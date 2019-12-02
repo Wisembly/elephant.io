@@ -126,6 +126,7 @@ class Version1X extends AbstractSocketIO
         }
 
         $payload = new Encoder($code . $message, Encoder::OPCODE_TEXT, true);
+
         $bytes = @\fwrite($this->stream, (string) $payload);
 
         if ($bytes === false){
@@ -311,5 +312,13 @@ class Version1X extends AbstractSocketIO
         if ($this->session->needsHeartbeat()) {
             $this->write(static::PING);
         }
+    }
+
+    /**
+     * @return resource
+     */
+    public function getResource()
+    {
+        return $this->stream;
     }
 }
