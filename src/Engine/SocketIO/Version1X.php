@@ -313,12 +313,4 @@ class Version1X extends AbstractSocketIO
             $this->write(static::PING);
         }
     }
-
-    /**
-     * @return resource
-     */
-    public function getResource()
-    {
-        return $this->stream;
-    }
 }

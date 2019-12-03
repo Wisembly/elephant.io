@@ -139,7 +139,6 @@ abstract class AbstractSocketIO implements EngineInterface
     public function read()
     {
         if (!\is_resource($this->stream)) {
-            \Log::error('stream not resource');
             return;
         }
 
@@ -154,7 +153,6 @@ abstract class AbstractSocketIO implements EngineInterface
         $bytes = \unpack('C*', $data);
 
         if (empty($bytes[2])){
-            \Log::error('bytes[2] empty');
             return;
         }
 
