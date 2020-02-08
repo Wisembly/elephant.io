@@ -42,7 +42,9 @@ class Version1X extends AbstractSocketIO
             return;
         }
 
-        $this->handshake();
+        if($this->options['transport'] != 'websocket'){
+            $this->handshake();
+        }
 
         $protocol = 'http';
         $errors = [null, null];
@@ -239,7 +241,7 @@ class Version1X extends AbstractSocketIO
      */
     protected function upgradeTransport()
     {
-        $query = ['sid'       => $this->session->id,
+        $query = ['sid'       => $this->session->id ? $this->session->id : null,
                   'EIO'       => $this->options['version'],
                   'transport' => static::TRANSPORT_WEBSOCKET];
 
