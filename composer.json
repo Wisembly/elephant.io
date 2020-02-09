@@ -1,5 +1,5 @@
 {
-    "name": "Wisembly/elephant.io",
+    "name": "wisembly/elephant.io",
     "type": "library",
     "description": "Send events to a websocket real time engine though PHP",
     "keywords": ["Nodejs", "WebSocket", "Dialog", "Real Time"],
