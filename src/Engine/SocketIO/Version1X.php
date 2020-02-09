@@ -241,7 +241,7 @@ class Version1X extends AbstractSocketIO
      */
     protected function upgradeTransport()
     {
-        $query = ['sid'       => $this->session->id ? $this->session->id : null,
+        $query = ['sid'       => isset($this->session->id) ? $this->session->id : null,
                   'EIO'       => $this->options['version'],
                   'transport' => static::TRANSPORT_WEBSOCKET];
 
@@ -310,8 +310,10 @@ class Version1X extends AbstractSocketIO
      */
     public function keepAlive()
     {
-        if ($this->session->needsHeartbeat()) {
-            $this->write(static::PING);
+        if($this->session){
+            if ($this->session->needsHeartbeat()) {
+                $this->write(static::PING);
+            }
         }
     }
 }
