@@ -181,9 +181,9 @@ class Version1X extends AbstractSocketIO
 
         // add customer headers
         $request_headers = [];
+        $context[$protocol]['header'] = isset($context[$protocol]['header']) ? $context[$protocol]['header'] : [];
         if (isset($this->options['headers'])) {
-            $headers = isset($context[$protocol]['header']) ? $context[$protocol]['header'] : [];
-            $context[$protocol]['header'] = \array_merge($headers, $this->options['headers']);
+            $context[$protocol]['header'] = \array_merge($context[$protocol]['header'], $this->options['headers']);
         }
 
         foreach ($context[$protocol]['header'] as $item) {
