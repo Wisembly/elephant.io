@@ -14,6 +14,9 @@ namespace ElephantIO\Engine\SocketIO;
 use InvalidArgumentException;
 use UnexpectedValueException;
 
+use Psr\Log\LoggerInterface;
+use GuzzleHttp\Client;
+
 use ElephantIO\EngineInterface;
 use ElephantIO\Payload\Encoder;
 use ElephantIO\Engine\AbstractSocketIO;
@@ -179,12 +182,19 @@ class Version1X extends AbstractSocketIO
         }
 
         // add customer headers
+        $request_headers = [];
         if (isset($this->options['headers'])) {
-            $headers = isset($context['http']['header']) ? $context['http']['header'] : [];
-            $context['http']['header'] = array_merge($headers, $this->options['headers']);
+            $headers = isset($context[$protocol]['header']) ? $context[$protocol]['header'] : [];
+            $context[$protocol]['header'] = \array_merge($headers, $this->options['headers']);
         }
 
-        $url    = \sprintf(
+        foreach ($context[$protocol]['header'] as $item) {
+            if (\preg_match('/^([^:]*):\s*([^;]*)/i', $item, $matches)) {
+                $request_headers[$matches[1]] = $matches[2];
+            }
+        }
+
+        $url = \sprintf(
             '%s://%s:%d/%s/?%s',
             $this->url['scheme'],
             $this->url['host'],
@@ -193,7 +203,10 @@ class Version1X extends AbstractSocketIO
             \http_build_query($query)
         );
 
-        $result = @\file_get_contents($url, false, \stream_context_create($context));
+        $client = new Client([]);
+
+        $response = $client->request('GET', $url, ['headers' => $request_headers]);
+        $result = $response->getBody()->getContents();
 
         if (false === $result) {
             $message = null;
@@ -214,13 +227,7 @@ class Version1X extends AbstractSocketIO
             throw new UnsupportedTransportException('websocket');
         }
 
-        $cookies = [];
-        foreach ($http_response_header as $header) {
-            if (\preg_match('/^Set-Cookie:\s*([^;]*)/i', $header, $matches)) {
-                $cookies[] = $matches[1];
-            }
-        }
-        $this->cookies = $cookies;
+        $this->cookies = $response->getHeader('Set-Cookie');
 
         $this->session = new Session(
             $decoded['sid'],
