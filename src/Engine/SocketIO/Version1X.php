@@ -13,8 +13,6 @@ namespace ElephantIO\Engine\SocketIO;
 
 use InvalidArgumentException;
 use UnexpectedValueException;
-
-use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 
 use ElephantIO\EngineInterface;
