@@ -33,7 +33,7 @@ We are suggesting you to use composer, with the following : `php composer.phar r
 Documentation
 =============
 The docs are not written yet, but you should check [the example directory](https://github.com/Wisembly/elephant.io/tree/master/example)
-to have a basic knownledge on how this library is meant to work.
+to get a basic knowledge on how this library is meant to work.
 
 Special Thanks
 ==============
