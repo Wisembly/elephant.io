@@ -22,9 +22,7 @@ Elephant.io
 
 NOTICE
 ======
-As we are not using Elephant.io anymore at Wisembly, and not having the time to
-maintain this library, we are looking for maintainers. Please look at the dedicated
-issue #135 !
+As this lib is not used anymore by the maintainers, the support has sadly been dropped. But rejoice, as a new repo is now maintained in its own organization : https://github.com/ElephantIO/elephant.io ! :)
 
 Installation
 ============
