@@ -21,6 +21,7 @@ use ElephantIO\EngineInterface;
 use ElephantIO\Payload\Decoder;
 use ElephantIO\Exception\UnsupportedActionException;
 use ElephantIO\Exception\MalformedUrlException;
+use ElephantIO\Exception\ServerConnectionFailureException;
 
 abstract class AbstractSocketIO implements EngineInterface
 {
@@ -112,9 +113,15 @@ abstract class AbstractSocketIO implements EngineInterface
     {
         $data = '';
         $chunk = null;
+        $i = 0;
         while ($bytes > 0 && false !== ($chunk = \fread($this->stream, $bytes))) {
+            if ($i > 2) {
+                throw new ServerConnectionFailureException('fread times error');
+            }
+
             $bytes -= \strlen($chunk);
             $data .= $chunk;
+            $i++;
         }
 
         if (false === $chunk) {
@@ -136,6 +143,7 @@ abstract class AbstractSocketIO implements EngineInterface
         }
 
         $this->keepAlive();
+
         /*
          * The first byte contains the FIN bit, the reserved bits, and the
          * opcode... We're not interested in them. Yet.
